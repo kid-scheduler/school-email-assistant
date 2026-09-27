@@ -24,6 +24,7 @@ This repository is the fresh implementation home. It is intended to stand on its
 - Users may want events written to Google Calendar, Outlook Calendar, or both.
 - Email access and calendar write access should be separate OAuth connections.
 - AI may suggest sources, topics, summaries, actions, deadlines, and important date/event mentions, but users remain the authority for what sources are trusted and what topics matter.
+- Application code should access provider accounts and hand scoped, normalized content to AI for analysis; AI should not directly access user email accounts or credentials.
 - Calendar writes require deterministic validation and deduplication before any event is created or updated.
 - LangGraph should coordinate workflow execution; provider APIs, persistence, OAuth, and calendar writes should remain ordinary application services.
 

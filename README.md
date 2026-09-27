@@ -1,6 +1,6 @@
 # School Email Assistant
 
-School Email Assistant helps parents turn school inbox noise into a daily, child-aware summary and a reliable calendar of events they actually care about.
+School Email Assistant helps parents turn school inbox noise into a daily, child-aware summary by identifying what matters, ignoring what does not apply to their children, and eventually maintaining a reliable calendar of events they actually care about.
 
 This is a fresh implementation intended to stand on its own as a public project.
 

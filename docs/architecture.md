@@ -4,7 +4,40 @@
 
 The new architecture should keep provider APIs, OAuth, persistence, and calendar writes as conventional TypeScript services. LangGraph should orchestrate the decision workflow and own the state transitions for classification, extraction, validation, approval, and digest inclusion.
 
+The product should be designed as a full-stack application with these minimum major components:
+
+- A React web application for the first user-facing surface.
+- A React Native mobile application, added after the web experience establishes the core workflows.
+- A backend API service for accounts, provider connections, preferences, digests, and review flows.
+- A Postgres database for product state, provider metadata, graph state, extracted items, and audit records.
+
+The web app should come first to simplify early development, static UI mocks, and browser-based validation. The mobile app should reuse the same API and product model rather than becoming a separate product.
+
 ## Proposed System Components
+
+### React Web App
+
+Initial user-facing client for setup, source approval, child/topic configuration, digest review, and later review queues.
+
+Responsibilities:
+
+- Account connection entry points
+- Trusted source approval
+- Child and topic configuration
+- Daily digest review
+- Explanation and audit views
+- Static HTML mock parity for harness validation
+
+### React Native Mobile App
+
+Mobile client for the same core workflows once the web product is stable.
+
+Responsibilities:
+
+- Digest reading and lightweight review
+- Approval actions for future calendar candidates
+- Push-notification-oriented workflows when those become part of the product
+- Shared API contracts with the web app
 
 ### API Service
 
@@ -87,6 +120,8 @@ Provider webhooks can be added after the core graph is stable.
 
 Use provider-neutral interfaces in the graph state. Provider-specific message and event payloads should be transformed before the graph sees them.
 
+Application code, not an AI agent, should access user email and calendar accounts. OAuth credentials, provider cursors, mailbox queries, and calendar write APIs belong behind typed service boundaries controlled by the backend. The AI workflow should receive only normalized, scoped content that the application has already selected for analysis.
+
 Example email message shape:
 
 ```ts
@@ -111,14 +146,30 @@ interface NormalizedEmail {
 
 Model calls should be small, typed, and auditable. Each call should produce structured data with confidence, evidence, and uncertainty fields.
 
+### Future Relevance Screening
+
+After the baseline workflow is working and measured, evaluate Jev as a low-cost screening stage before the more capable analysis model. Jev can test normalized email content against the user's preferred categories and return category-level probabilities. Likely matches should continue to the main LangGraph analysis workflow.
+
+This is an optimization hypothesis, not a requirement for the first implementation. The screening stage must be validated against labeled email fixtures before it can suppress downstream model calls. It should be tuned for high recall, route uncertain or borderline messages onward, and retain its scores and routing decision for audit and regression testing. Relevant messages must not disappear solely because a low-cost classifier made an opaque negative decision.
+
+Evaluation should compare:
+
+- Recall for relevant messages, including messages relevant to only one configured child.
+- False-negative rates by source and preferred category.
+- Cost and latency per processed email.
+- The percentage of messages routed to the more capable model.
+- Behavior when preferences are sparse, overlapping, or newly changed.
+
 Avoid:
 
 - One giant prompt that classifies, extracts, validates, and decides calendar writes.
+- Giving an AI agent direct access to a user's email account, mailbox search tools, OAuth credentials, or calendar APIs.
 - Model-written calendar API payloads without deterministic validation.
 - Model decisions that cannot be traced back to source text.
 
 Prefer:
 
+- Backend-owned provider connectors that fetch and scope email content before model analysis.
 - Focused schemas per node.
 - Deterministic validators after model extraction.
 - Saved input/output for debugging and regression tests.
@@ -130,7 +181,10 @@ Initial deployment can be a single API service plus Postgres:
 
 ```mermaid
 flowchart LR
-  User["User"] --> API["API Service"]
+  User["User"] --> Web["React Web App"]
+  User -. "later" .-> Mobile["React Native App"]
+  Web --> API["API Service"]
+  Mobile --> API
   API --> DB["Postgres"]
   API --> OAuth["OAuth Providers"]
   Scheduler["Scheduler"] --> Graph["LangGraph Worker"]

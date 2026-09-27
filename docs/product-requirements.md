@@ -2,7 +2,7 @@
 
 ## Problem
 
-Parents receive a steady stream of school-related emails across multiple children, schools, activities, and systems. Important dates and required actions are mixed with fundraising, newsletters, announcements, and general noise. The product should help users choose the schools, senders, children, and topics they care about, then produce a daily summary and calendar updates for the relevant events.
+Parents receive a steady stream of school-related emails across multiple children, schools, activities, and systems. Important dates and required actions are mixed with fundraising, newsletters, announcements, and real school events that may not apply to their child. The product should help users choose the schools, senders, children, and topics they care about, ignore irrelevant items, and then produce a daily summary and calendar updates for the relevant events.
 
 ## Goals
 
@@ -11,10 +11,22 @@ Parents receive a steady stream of school-related emails across multiple childre
 - Let the user approve trusted sources instead of silently trusting AI decisions.
 - Support child-specific profiles for school, grade, interests, ignore rules, and calendar policy.
 - Classify incoming school email by child, source, topic, urgency, and actionability.
+- Filter out irrelevant school items, such as events for another grade, class, club, sport, or child.
 - Extract summaries, required actions, deadlines, and event candidates.
 - Add or update calendar events when the user's policy allows it.
 - Send a daily digest of relevant summaries, actions, and calendar activity.
 - Collect user feedback so source and topic matching improves over time.
+
+## Product Surfaces
+
+The product should eventually include:
+
+- A React web application as the first user-facing surface.
+- A React Native phone application after the web workflow and API contracts are stable.
+- A backend API service for accounts, provider connections, preferences, digests, and review flows.
+- A Postgres database for persisted product state, provider metadata, graph state, extracted items, and audit records.
+
+The first implementation should prioritize the web app, API service, and database. The phone app should be planned as part of the product architecture, but it does not need to be built before the web version proves the core workflows.
 
 ## Users
 
@@ -62,6 +74,8 @@ Each child should have a profile:
 
 Topics should be natural-language rules with examples, not only static keywords. For example, "Orchestra" can include concerts, rehearsals, call times, required attire, schedule changes, auditions, and parent meetings.
 
+Ignore rules should also be child-aware. A message can come from a trusted school source and still be irrelevant if it concerns a grade, class, activity, team, or event that does not apply to any configured child.
+
 ### Daily Digest
 
 The daily digest should include:
@@ -69,6 +83,7 @@ The daily digest should include:
 - New relevant school messages
 - Upcoming events found or updated
 - Required actions and deadlines
+- Relevant dates or events mentioned in email, without promoting irrelevant items into the user's attention stream
 - Items needing approval
 - Ignored or low-confidence items only when the user asks to inspect them
 
@@ -89,6 +104,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 - Retrieve recent and new email from approved providers.
 - Normalize HTML email into model-ready text while retaining source metadata.
 - Store provider message IDs for deduplication.
+- Keep user account access inside application-controlled provider connectors; AI should analyze scoped content handed to it by the application, not directly access a user's mailbox or credentials.
 - Support approved source lists by email address and domain.
 - Classify messages against children, topics, and user preferences.
 - Extract event candidates with start date, end date, title, location, description, confidence, and evidence.
@@ -100,6 +116,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 ## Non-Goals For The First Implementation
 
 - A free-roaming autonomous inbox agent.
+- AI agents with direct access to user email accounts, OAuth credentials, mailbox search, or calendar APIs.
 - Silent calendar writes from unapproved sources.
 - Reading every email in a user's mailbox indefinitely.
 - Full frontend polish.
