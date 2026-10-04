@@ -1,5 +1,9 @@
 # Data Model
 
+## Proposal Status
+
+This inherited conceptual model is preserved for the [Version 0 trial](product/requirements-workshop-v0.md), not accepted as a formal schema. Owner/viewer roles, multiple-child category and event assignments, and date-aware cached digests require reconciliation before specification. Calendar entities/policies are future-stage proposals; delivery fields do not imply proactive email in v1. Retention and credential storage remain unresolved.
+
 ## Proposed Core Entities
 
 ### Account
@@ -40,24 +44,26 @@ Suggested fields:
 - `createdAt`
 - `updatedAt`
 
-### Trusted Source
+### Trusted Source Rule
 
-User-approved sender or domain that the system may process.
+User-approved rule describing which senders the system may process. Rules are configured per household and may differ across schools and communication systems.
 
 Suggested fields:
 
 - `id`
 - `accountId`
 - `providerConnectionId`
-- `type`: `EMAIL_ADDRESS` or `DOMAIN`
+- `type`: `EMAIL_ADDRESS` or `DOMAIN` initially; future evidence may add `ADDRESS_PATTERN` or `STABLE_SENDER_ID`
 - `value`
 - `displayName`
+- `scopeLabel`: user-facing school, district, or platform context
 - `status`: `SUGGESTED`, `APPROVED`, `REJECTED`, `DISABLED`
+- `approvedByUserId`
 - `notes`
 
 ### Topic Rule
 
-A natural-language preference or interest area, optionally scoped to a child.
+A natural-language preference or interest area explicitly assigned to one or multiple children. Category preferences have no implicit household-wide scope. The existing suggested fields below must be reconciled with this product decision before formal specification.
 
 Suggested fields:
 

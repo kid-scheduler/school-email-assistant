@@ -1,5 +1,9 @@
 # Architecture
 
+## Proposal Status
+
+Requirements discovery is paused at the [Version 0 trial snapshot](product/requirements-workshop-v0.md). This preserves architecture proposals, not a selected application stack or formal specification. React, React Native, Postgres, deployment shape, and detailed schemas remain provisional. Calendar components and policies describe a future stage, not the digest-only trial.
+
 ## Direction
 
 The new architecture should keep provider APIs, OAuth, persistence, and calendar writes as conventional TypeScript services. LangGraph should orchestrate the decision workflow and own the state transitions for classification, extraction, validation, approval, and digest inclusion.
@@ -74,7 +78,7 @@ Calendar connector responsibilities:
 
 ### Graph Worker
 
-The graph worker runs LangGraph workflows for email processing and daily digest generation.
+The graph worker runs LangGraph workflows for owner-triggered email processing and digest refresh.
 
 Responsibilities:
 
@@ -106,15 +110,15 @@ Persistence should cover:
 - Digest items
 - User feedback
 
-### Scheduler
+### Background Processing
 
-The scheduler triggers:
+The first release polls the connected inbox every four hours and also supports owner-triggered checks. Selecting `Check for updates` should enqueue or run the inbox synchronization and digest refresh workflow immediately. The polling interval should be operationally configurable. Provider webhooks and scheduled digest delivery are not required.
 
-- Periodic email polling until provider webhooks are added
-- Daily digest generation
-- Retry of transient provider/model failures
+Background processing should trigger the agreed polling cadence and handle bounded retries. Later releases may add:
 
-Provider webhooks can be added after the core graph is stable.
+- Automatic checks when the app opens
+- Higher-frequency polling or provider webhooks
+- Notification delivery
 
 ## Provider Boundary
 
