@@ -107,7 +107,7 @@ Deterministic checks preserve evidence and expose uncertainty rather than reject
 
 - Preserve missing dates, broad ranges, and original phrases; never invent a deadline or all-day status.
 - Resolve relative phrases against the source timestamp in the household timezone; setup prefills a detected timezone for owner confirmation, and all household views use that saved timezone.
-- When the source timestamp is missing or unreliable, estimate relative dates from the household-local received timestamp, preserve the original phrase, and label the result `Estimated from received date`.
+- When the source timestamp is missing or unreliable, estimate relative dates from the household-local received timestamp, preserve the original phrase, and always route the estimate to `Needs review` with `Estimated from received date`. A single computed date is not labeled `Exact date`; a range also retains `Date range`.
 - Keep specificity distinct from interpretation certainty; uncertain interpretations go to `Needs review`.
 - Keep distinct child/participant times and state which details the body omits.
 - Retain items referring to external instructions without reading those instructions.
@@ -148,13 +148,25 @@ flowchart TD
   A2["Four-hour background schedule"] --> B
   B --> C["Fetch new approved-source messages"]
   C --> D["Process and merge extracted items"]
-  D --> E["Load digest window"]
-  E --> F["Group by child and topic"]
-  F --> G["Prioritize actions and events"]
-  G --> H["Render and persist digest"]
+  D --> E["Persist stored items and inbox-check status"]
+  E --> F["Display using current household date"]
 ```
 
-The app should continue showing the cached digest while this workflow runs, then expose the refreshed persisted digest and check status. Email and push delivery are not part of the first release.
+The app continues displaying stored items with current-date placement while inbox refresh runs, then uses the newly persisted items and inbox-check status. Persisting a rendered digest is optional; its prior-date placement is not authoritative. Email and push delivery are not part of the first release.
+
+### Date-Aware Display
+
+A separate display path calculates from stored items on display, at household-local midnight for active views, and on resume for suspended views. It does not call the inbox connector or rerun classification/extraction:
+
+```mermaid
+flowchart TD
+  A["Open or resume view"] --> D["Use stored items and current household date"]
+  B["Active view crosses household midnight"] --> D
+  D --> E["Recalculate windows, age, grouping, and emphasis"]
+  E --> F["Display household or child view"]
+```
+
+Follow existing digest/review aging rules. Keep interpreted temporal values and source evidence fixed; only date-dependent presentation changes. Preserve the last successful inbox check and failure/running status, and do not set material source-update markers for a date-only change. No frontend timer, transport, or database representation is selected by this contract.
 
 ## Human Review
 

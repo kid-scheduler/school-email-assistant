@@ -105,7 +105,7 @@ The digest should preserve the source's original timeframe language as evidence.
 
 When the body provides no event date, due date, or timeframe, use the email's received date to organize the item and show its age, clearly labeled as the received date rather than an event date or deadline. Keep these undated items visible for seven household-local calendar dates, counting the received date as day one. They leave the digest at midnight starting day eight: an item received Sept 27 at 18:00 remains eligible through Oct 3 and leaves at 00:00 Oct 4. This is calendar-day aging, not 168 elapsed hours. Pending review items remain accessible in the owner review queue after leaving the digest. Relative phrases normally resolve against the source email date, using the estimated received-date fallback below when the source timestamp is missing or unreliable; retain the original phrase. Items with explicit or resolved dates use those dates for placement instead of this undated fallback.
 
-When the source sent timestamp is missing or unreliable, use the received timestamp in the household timezone to estimate relative dates. Show the estimate with `Estimated from received date`, explain that the source timestamp was unavailable or unreliable, and preserve the original phrase and received timestamp. For an email received Oct 4 saying “tomorrow,” estimate Oct 5. Do not present this fallback as a confidently resolved source date or let it imply future calendar-write eligibility.
+When the source sent timestamp is missing or unreliable, use the received timestamp in the household timezone to estimate relative dates. Show the estimate with `Estimated from received date`, explain that the source timestamp was unavailable or unreliable, and preserve the original phrase and received timestamp. For an email received Oct 4 saying “tomorrow,” estimate Oct 5. Every such fallback estimate routes to `Needs review`, even when the relative phrase yields a single computed date. Show both `Needs review` and `Estimated from received date`; do not label a fallback-derived single date `Exact date`. For a fallback-derived range, also show `Date range` to preserve its breadth. The estimate is not a confidently resolved source date and does not imply future calendar-write eligibility.
 
 Each temporal item should communicate two separate qualities:
 
@@ -118,7 +118,8 @@ The first release should communicate these qualities with plain-language labels 
 
 - `Exact date` for a specific source date or a clearly resolved exact relative date
 - `Date range` for a broad but resolvable timeframe
-- `Needs review` when the timeframe cannot be interpreted confidently
+- `Needs review` when the timeframe cannot be interpreted confidently, including every received-date fallback estimate
+- `Estimated from received date` alongside `Needs review` for that fallback; also retain `Date range` when the estimate is a range
 
 ### Confirmed Worthwhile Outcomes
 
@@ -248,7 +249,7 @@ The digest should provide one place to review:
 - Relevant dates or events mentioned in email, without promoting irrelevant items into the user's attention stream
 - Distinct times for different participants when a message provides them, such as student arrival time and parent start time
 - Items whose dates, times, audience, or required actions are unclear
-- An `Exact date`, `Date range`, or `Needs review` label for each temporal item
+- Temporal labels following [Confirmed Action Categories](#confirmed-action-categories), including paired `Needs review` and `Estimated from received date` for every received-date fallback
 - Confidently ignored items only when the user asks to inspect them
 - Low-confidence relevance decisions in a compact `Needs review` section showing sender, subject, received date, and why relevance is uncertain
 - Events from the history window in a separate, clearly labeled past section, defaulting to the previous seven complete calendar days
@@ -265,7 +266,11 @@ When an action's due date passes, move it into a separate `Past due date` sectio
 
 The first release will use a date-aware web app view with low-frequency background checks and an explicit `Check for updates` action. A daily digest email is not the default because it would add to the inbox volume the product is intended to reduce. Proactive notifications and near-real-time background fetching are deferred so the first release can be delivered more quickly.
 
-Opening the app should display the cached digest without app opening itself triggering an inbox check. The cached digest may include messages retrieved by four-hour background checks. The household owner can select `Check for updates` to start an immediate inbox check. The digest should display when it last checked the inbox successfully and whether a check is currently running or failed. When a newer message changes the time, location, requirements, or other material details of an existing event, the digest should identify that event as updated and show the current information with source evidence.
+Opening the app displays a digest from cached, stored items without itself triggering an inbox check. Calculate placement, age, history eligibility, and two-week emphasis using the current household-local date whenever the view is displayed; yesterday’s rendered output is not authoritative for today’s placement. Recalculate an active view when the household date changes at midnight. If the view was suspended or inactive, recalculate on resume before presenting its current placement. Apply the same rules to household and child views without fetching email or rerunning content analysis. Recalculation can bring an already stored item into the new window, move it to history or `Past due date`, or remove it from the digest under the existing aging rules. Pending review items remain accessible in their review queue. Absolute dates already interpreted from source or received timestamps do not shift merely because today changed.
+
+The cached items may include messages retrieved by four-hour background checks. The household owner can select `Check for updates` to start an immediate inbox check. The digest should display when it last checked the inbox successfully and whether a check is currently running or failed. Date-only recalculation must not advance the last successful inbox-check timestamp, clear a check failure, or mark an item as materially updated by a new message. Timer, rendering, and storage mechanisms remain implementation choices.
+
+When a newer message changes the time, location, requirements, or other material details of an existing event, the digest should identify that event as updated and show the current information with source evidence.
 
 The four-hour cadence should be an operational configuration value, not a user-facing preference in the first release, so it can be tuned later without changing digest behavior.
 
@@ -348,7 +353,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 - Separate actions whose due date has passed into `Past due date` without implying that they are incomplete.
 - Provide an on-demand inbox check, display its status and last-successful-check time, and distinguish materially updated events from unchanged events.
 - Run inbox checks every four hours, with the cadence stored as operational configuration rather than hardcoded.
-- Do not make app opening itself trigger an inbox check.
+- Do not make app opening itself trigger an inbox check. Recalculate date-dependent display from stored items on display, at household-local midnight for active views, and on resume for suspended views; do not change inbox-check status for this recalculation.
 - Give each authorized household viewer a separate identity and access to the digest independently of inbox connection ownership.
 - Give every authorized viewer access to the complete household digest and child-specific views, without per-child access restrictions.
 - Display shared events once in the household view and once in each applicable child's view, preserving child-specific times and instructions.
@@ -385,14 +390,14 @@ Calendar writes should be reversible and auditable. Every created event should l
 - The system can produce structured summaries, topic matches, required actions, deadlines, and upcoming event details.
 - The digest identifies each in-scope action category and shows when its source email was sent.
 - The digest preserves and resolves stated due dates or timeframes without converting vague ranges into fabricated exact deadlines.
-- The digest distinguishes exact dates from ranges and clearly marks interpretations that need review.
+- The digest distinguishes exact dates from ranges and clearly marks interpretations that need review. Every received-date fallback appears in `Needs review` with `Estimated from received date`, including a single computed date; a fallback-derived range also retains `Date range`, and a fallback-derived single date is not labeled `Exact date`.
 - Temporal certainty is communicated with plain-language labels rather than numeric confidence scores.
 - The digest clearly identifies action items whose source provides no due date or timeframe.
 - Items with no stated date or timeframe remain visible for seven household-local calendar dates including receipt day and leave at midnight starting day eight, without presenting received date as an event date or deadline. Pending review items remain accessible in the owner review queue.
 - The digest distinguishes role-specific times when the source does, including student arrival time and parent start time.
 - The digest presents relevant upcoming information relative to the current date without requiring a calendar connection.
 - The digest shows the next four weeks, emphasizes the next two weeks, and keeps the default previous seven complete calendar days in a clearly separate past section.
-- An action moves to `Past due date` after its due date passes, without an unsupported completion-status claim.
+- An action moves to `Past due date` after its due date passes, without an unsupported completion-status claim. Stored items enter/leave display windows and change emphasis using today’s household-local date even without an inbox check; an active view updates at midnight, and a suspended view updates on resume. The last successful inbox-check timestamp and interpreted source dates remain unchanged.
 - After a successful user-initiated check, a material same-day event update is visible and clearly marked as an update.
 - A clear replacement updates the displayed event or action details with retained evidence; an unresolved conflict shows both supporting sources in `Needs review` without presenting an unsupported resolution.
 - The user can see when the inbox was last checked successfully and whether the current check succeeded or failed.

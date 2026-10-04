@@ -2,7 +2,16 @@
 
 Reviewed: 2026-10-04
 
-Baseline: working-tree reconciliation following `requirements-workshop-v0`. This is an independent documentation review, not an application test or approval to implement.
+Baseline: reconciliation following `requirements-workshop-v0`, preserved at commit `10d49aa` on `stage/requirements-reconciliation-v1` and annotated tag `requirements-reconciliation-v1`. This is an independent documentation review, not an application test or approval to implement.
+
+## Reconciliation Status
+
+Updated: 2026-10-04. Findings below describe the checkpoint; this table records subsequent owner decisions.
+
+| Finding | Status | Evidence and remaining work |
+| --- | --- | --- |
+| C1 | Resolved | Owner selected review for every received-date fallback estimate. [Temporal labels](../product-requirements.md#confirmed-action-categories), [workflow routing](../langgraph-workflows.md#validate-digest-fidelity), success criteria, and [C1 scenarios](reconciliation-scenarios.md#estimated-date-routing-c1) show paired review/estimate labels, preserve range breadth, and prohibit `Exact date` on a fallback-derived single date. |
+| C2 | Resolved | Owner selected calculation from stored items on display, at household-local midnight for active views, and on resume. [Digest requirements](../product-requirements.md#date-aware-digest), [display workflow](../langgraph-workflows.md#date-aware-display), and [C2 scenarios](reconciliation-scenarios.md#cached-date-rollover-c2) update placement independently of inbox checks while preserving check status and interpreted dates. |
 
 ## Verified Corrections
 
@@ -14,7 +23,7 @@ Baseline: working-tree reconciliation following `requirements-workshop-v0`. This
 - Date-range and calendar-day scenarios provide concrete expected outcomes.
 - Overview and current state link to authoritative detail instead of repeating the full requirements.
 
-The original R1–R7 findings are reconciled at the documentation level. The following interactions emerged from reviewing the resulting contracts and remain open.
+The original R1–R7 findings are reconciled at the documentation level. The following interactions emerged from reviewing the resulting contracts. Their current status is recorded above.
 
 ## C1: Estimated Date Labels And Review Routing
 
@@ -41,4 +50,4 @@ Decision needed: calculate placement from stored items at display time, or defin
 
 ## Checkpoint Scope
 
-Preserve the reconciled documentation with C1 and C2 explicitly open. Further discovery should begin with these interactions rather than reopening settled source, child-assignment, or window-counting decisions. The original V0 tag remains unchanged.
+At the checkpoint, C1 and C2 were explicitly open. This follow-up resolves only those interactions with the owner and stops afterward, without reopening settled source, child-assignment, or window-counting decisions. The original V0 tag remains unchanged.

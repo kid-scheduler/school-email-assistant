@@ -2,7 +2,7 @@
 
 ## Summary
 
-Documentation reconciliation of R1–R7 is complete following the merged Version 0 checkpoint. No application functionality exists. The current scope ends after reconciliation and synthetic scenario documentation; OpenSpec, application implementation, and skill creation are deferred.
+Documentation reconciliation of R1–R7 and follow-up C1/C2 is complete. This follow-up began from clean commit `10d49aa` on `stage/requirements-reconciliation-v1`, with the annotated `requirements-reconciliation-v1` tag preserving its checkpoint. No application functionality exists. The current scope ends after reconciliation and synthetic scenario documentation; OpenSpec, application implementation, and skill creation are deferred.
 
 ## Completed
 
@@ -12,10 +12,10 @@ Documentation reconciliation of R1–R7 is complete following the merged Version
 - Confirmed source-rule lifecycle with the owner; see [source scenarios](../product/reconciliation-scenarios.md#source-rule-lifecycle-r3).
 - Completed R4 review-aging and precedence decisions; see [review scenarios](../product/reconciliation-scenarios.md#review-aging-and-precedence-r4).
 - Added [synthetic reconciliation scenarios](../product/reconciliation-scenarios.md) with confirmed outcomes and separately identified future/implementation details.
+- Resolved C1 estimated-date routing/labels and C2 current-date display from stored items; see [checkpoint review status](../product/requirements-reconciliation-review.md#reconciliation-status).
 
 ## Pending
 
-- Resolve estimated-date routing and cached date-rollover behavior from the [independent checkpoint review](../product/requirements-reconciliation-review.md).
 - Other unresolved product and implementation decisions remain in [Open Questions](../open-questions.md).
 - UI workflow validation remains future work. No formal spec or implementation is authorized by this reconciliation.
 
@@ -29,4 +29,4 @@ Documentation reconciliation of R1–R7 is complete following the merged Version
 
 Documentation-only changes use the [current documentation quality gates](../../.harness/quality-gates.md#current-documentation-phase). There are no application checks to run. Finding status and remaining uncertainty are linked above instead of duplicating product rules here.
 
-Verified 2026-10-04: `git diff --check` passed; 105 local Markdown paths/heading anchors across 25 documents passed. Reviewed examples use synthetic names and reserved `.example` addresses; no private paths or source-email content were added. No blog/outline files or application checks exist in this repository.
+Verified 2026-10-04: `git diff --check` passed; 115 local Markdown paths/heading anchors across 26 documents passed. Reviewed examples use synthetic names and reserved `.example` addresses; no private paths or source-email content were added. No blog/outline files or application checks exist in this repository.

@@ -2,8 +2,6 @@
 
 ## Product
 
-- How should received-date estimates combine temporal labels and `Needs review` routing? See [C1](product/requirements-reconciliation-review.md#c1-estimated-date-labels-and-review-routing).
-- How should cached digest placement reflect household-local date changes without an inbox check, including a view left open across midnight? See [C2](product/requirements-reconciliation-review.md#c2-calendar-day-transitions-versus-cached-rendering).
 - Cancellation display is unresolved. Keeping the event at its original date with a `Canceled` label was proposed but not accepted; no retention/display rule is confirmed.
 - Which additional synthetic acceptance cases and UI workflow checks are needed before formal specification? Reconciliation is documentation-only.
 - What should happen to retained messages, excerpts, and household data when an inbox is disconnected or a household is deleted?

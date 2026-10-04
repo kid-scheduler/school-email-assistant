@@ -189,7 +189,7 @@ Suggested fields:
 
 ### Digest
 
-Represents a cached date-aware digest and its rendered output; v1 does not send digest email.
+Represents a view of cached, stored items; optional rendered output must be recalculated for the current household date. Display-time/midnight/resume placement is independent of inbox refresh. No database representation is selected; v1 does not send digest email.
 
 Suggested fields:
 
