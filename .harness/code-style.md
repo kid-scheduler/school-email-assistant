@@ -1,6 +1,6 @@
 # Harness Code Style Guidance
 
-No implementation stack has been selected yet. These rules apply once code is introduced.
+Major components are selected in [Decision 0005](../docs/decisions/0005-preserve-selected-component-direction.md); detailed implementation choices remain open. These rules apply once code is introduced.
 
 ## General
 

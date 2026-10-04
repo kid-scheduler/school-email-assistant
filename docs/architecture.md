@@ -2,7 +2,7 @@
 
 ## Proposal Status
 
-Requirements discovery is paused at the [Version 0 trial snapshot](product/requirements-workshop-v0.md). This preserves architecture proposals, not a selected application stack or formal specification. React, React Native, Postgres, deployment shape, and detailed schemas remain provisional. Calendar components and policies describe a future stage, not the digest-only trial.
+The Version 0 checkpoint is merged; documentation reconciliation is complete. [Decision 0005](decisions/0005-preserve-selected-component-direction.md) records the selected React web, React Native later, backend API, and Postgres direction. Backend framework, schema, authentication vendor, hosting, and deployment topology remain undecided. Detailed architecture below is proposed, not a formal specification. Calendar components and policies are future-stage only.
 
 ## Direction
 
@@ -17,7 +17,7 @@ The product should be designed as a full-stack application with these minimum ma
 
 The web app should come first to simplify early development, static UI mocks, and browser-based validation. The mobile app should reuse the same API and product model rather than becoming a separate product.
 
-## Proposed System Components
+## Selected Components And Proposed Responsibilities
 
 ### React Web App
 
@@ -53,7 +53,7 @@ Responsibilities:
 - Account, child, source, topic, and policy configuration
 - Review and feedback APIs
 - Digest read APIs
-- Calendar connection management
+- Calendar connection management in the future calendar stage
 
 The backend framework should be chosen for the fresh implementation rather than inherited by default.
 
@@ -84,17 +84,17 @@ Responsibilities:
 
 - Load message and account context
 - Classify source, child, and topic
-- Extract actions, deadlines, and event candidates
+- Extract digest actions, deadlines, and event details; formal candidates are future-stage only
 - Validate and route decisions
 - Pause for approval when policy requires it
 - Persist graph state and outputs
-- Schedule calendar writes through provider services
+- In the future calendar stage, schedule writes through provider services
 
-This can live inside the API service at first, but the graph should be packaged so it can later move into a worker process.
+Whether the graph initially runs inside the API or a separate worker is undecided. Keep that boundary movable.
 
 ### Persistence Layer
 
-Postgres remains the likely backing store. Tables should be designed around the fresh product model.
+Postgres is the selected backing store. Tables should be designed around the fresh product model.
 
 Persistence should cover:
 
@@ -181,7 +181,7 @@ Prefer:
 
 ## Deployment Shape
 
-Initial deployment can be a single API service plus Postgres:
+One proposed deployment is a single API service plus Postgres; deployment topology is undecided. Calendar connectors in this diagram are future-stage only:
 
 ```mermaid
 flowchart LR
@@ -194,7 +194,7 @@ flowchart LR
   Scheduler["Scheduler"] --> Graph["LangGraph Worker"]
   Graph --> DB
   Graph --> Email["Email Connectors"]
-  Graph --> Calendar["Calendar Connectors"]
+  Graph -. "later stage" .-> Calendar["Calendar Connectors"]
   Graph --> Model["OpenAI / LLM Provider"]
 ```
 

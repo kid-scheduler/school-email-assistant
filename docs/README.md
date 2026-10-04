@@ -29,11 +29,6 @@ This repository is the fresh implementation home. It is intended to stand on its
 - Calendar writes require deterministic validation and deduplication before any event is created or updated.
 - LangGraph should coordinate workflow execution; provider APIs, persistence, OAuth, and calendar writes should remain ordinary application services.
 
-## Near-Term Sequence
+## Current Scope
 
-1. Capture the requirements and target architecture in these docs.
-2. Refine the generic development harness in a separate repository.
-3. Decide the initial application scaffold for this fresh repo.
-4. Add LangGraph and provider abstraction dependencies.
-5. Add graph-driven email classification and extraction behind tests.
-6. Include important dates/events in the digest, while deferring formal calendar candidates and writes until the first digest-focused workflow is useful.
+Reconcile the workshop findings and document synthetic scenarios; see [review status](product/requirements-workshop-v0-review.md#reconciliation-status) and [scenario outcomes](product/reconciliation-scenarios.md). Stop before OpenSpec, application implementation, or skill creation. Later work requires a separate authorized scope.

@@ -2,11 +2,11 @@
 
 ## Product Goal
 
-Build a school email assistant that helps parents manage school communication across children, topics, inboxes, and calendars.
+Build a read-only, date-aware web digest from approved-source bodies in the pilot inbox. Calendar integration follows later.
 
 ## Current Phase
 
-Requirements and harness setup.
+Documentation reconciliation and harness setup. Current scope stops before OpenSpec, application implementation, or skill creation; see [review status](../docs/product/requirements-workshop-v0-review.md#reconciliation-status).
 
 ## Primary User
 

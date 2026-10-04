@@ -2,7 +2,7 @@
 
 ## Status
 
-Requirements discovery is paused at the product owner's request. This preserves the Version 0 workshop trial, not an implemented release, formal specification, or approval to implement. No merge into main is part of this checkpoint.
+At the original checkpoint, requirements discovery was paused and merging was outside that checkpoint's scope. The checkpoint was subsequently merged into main (merge commit `95d76c2`). The immutable `requirements-workshop-v0` tag preserves the original record. This working copy now includes authorized documentation reconciliation, not formal specification or implementation approval; see [review status](requirements-workshop-v0-review.md#reconciliation-status).
 
 [Product Requirements](../product-requirements.md) retain workshop detail; [Open Questions](../open-questions.md) retain unresolved decisions. The human product owner remains authoritative. Proposals do not become requirements without acceptance.
 
@@ -41,22 +41,24 @@ These defaults were accepted for the trial, but remain tunable after evaluation.
 | Freshness | Four-hour configurable background checks plus owner-triggered checks; opening the app displays cached data |
 | Pilot evaluation | Two weeks of normal use, extended if too few events occur to assess coverage |
 
+Current reconciliation follow-up: the owner confirmed fixed seven-day history in the first release, with a separate configuration value so a user setting can be added later. Details of that future setting are deferred. The table above preserves workshop defaults. See [current digest requirements](../product-requirements.md#date-aware-digest).
+
 ## Working Hypotheses And Future Ideas
 
 The digest can reduce review burden enough to become the primary school-information surface, and one inbox can establish usefulness despite incomplete household coverage. Neither hypothesis has been tested.
 
 Google Calendar is the planned near-term second stage, but review/automation behavior is unresolved. Gmail, school-managed inboxes, mobile clients, notifications, shared generic category catalogs, and cross-household learning are future capabilities, not Version 0 requirements.
 
-React, React Native, Postgres, detailed schemas, and full calendar workflow diagrams are inherited architecture proposals, not selected stack or formal contracts. LangGraph coordination and application-controlled provider access remain project guidance. No application stack or authentication provider is selected; Auth0 was discussed as a candidate only. SMS sign-in is outside Version 0.
+React web first, React Native later, a backend API, and Postgres are selected product-owner component direction, restored in [Decision 0005](../decisions/0005-preserve-selected-component-direction.md). Detailed schemas, backend framework, deployment topology, hosting, and authentication vendor remain undecided. Full calendar workflows are future-stage proposals. LangGraph coordination and application-controlled provider access remain project guidance. Auth0 is a candidate only; SMS sign-in is outside Version 0.
 
 ## Unresolved At Pause
 
 - Cancellation display: retaining an item at its original date with `Canceled` was proposed, but has not been accepted. No cancellation history rule is confirmed.
-- Representative synthetic acceptance cases and UI workflow validation remain incomplete.
+- Representative synthetic reconciliation cases are now documented; UI workflow validation remains incomplete.
 - Auth provider, persistent-session lifetime, code expiry/resend behavior, and invitation edge cases remain undefined.
 - Data retention, deletion/disconnection behavior, evidence storage limits, and credential protection need decisions before implementation.
 - Detailed relevance/uncertainty criteria, event matching, and correction-learning mechanics need validation; no model or thresholds are selected.
-- Inherited data/workflow proposals need reconciliation with child assignments, body-only digest analysis, and read-only household roles before formal specification.
+- Conceptual child assignments and digest/calendar validation separation are reconciled; storage design and detailed workflows remain proposals. Source lifecycle is now confirmed in [synthetic scenarios](reconciliation-scenarios.md); review aging/precedence and date boundaries are also confirmed.
 
 ## Preservation Checks
 

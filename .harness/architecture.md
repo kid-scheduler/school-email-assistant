@@ -2,7 +2,7 @@
 
 ## Current Architecture Status
 
-No application stack has been implemented yet. Architecture guidance is provisional and should become more concrete through specs and decision records.
+No application code exists. React web, React Native later, a backend API, and Postgres are selected; see [Decision 0005](../docs/decisions/0005-preserve-selected-component-direction.md). Detailed architecture remains provisional.
 
 ## Intended Boundaries
 
