@@ -2,7 +2,7 @@
 
 ## Current State
 
-No application code has been implemented yet. Architecture is currently documented as intended boundaries and workflow expectations.
+No application code has been implemented yet. Requirements discovery is paused at the [Version 0 trial snapshot](../product/requirements-workshop-v0.md). Architecture is documented as intended boundaries and provisional proposals, not formal contracts.
 
 ## Expected System Shape
 
@@ -16,10 +16,10 @@ flowchart LR
   API --> Graph["LangGraph Workflow"]
   Graph --> Model["LLM / Structured Output"]
   Graph --> Email["Email Connectors"]
-  Graph --> Calendar["Calendar Connectors"]
+  Graph -. "later release" .-> Calendar["Calendar Connectors"]
 ```
 
-At a minimum, the application should include a React web frontend, a backend API service, and Postgres. A React Native phone app is part of the intended product shape, but it can follow after the web version proves the core setup, digest, and review workflows.
+The diagram proposes a React web frontend, backend API service, and Postgres; no application stack has been selected. React Native is a future mobile proposal, not a Version 0 requirement. These choices need reconciliation with the product boundary before formal specification.
 
 ## Key Boundaries
 
@@ -28,8 +28,8 @@ At a minimum, the application should include a React web frontend, a backend API
 - API handles account state, preferences, review queues, and persisted records.
 - Graph handles workflow state and AI-assisted classification/extraction.
 - Provider connectors hide external provider differences.
-- Application services access user email and calendar accounts; AI receives normalized, scoped content for analysis rather than direct account access.
-- Calendar writes require deterministic validation and policy checks.
+- In the first release, application services access user email accounts and AI receives normalized, scoped content for analysis rather than direct account access.
+- Calendar connectors and writes are later-release capabilities and will require deterministic validation and policy checks.
 
 ## Links
 

@@ -1,5 +1,9 @@
 # LangGraph Workflows
 
+## Proposal Status
+
+Requirements discovery is paused at the [Version 0 trial snapshot](product/requirements-workshop-v0.md). The detailed processing graph, state types, and nodes below are inherited proposals, not a formal specification. Calendar policy, provider deduplication, writes, and formal event candidates are future-stage only. Digest processing must preserve undated items, uncertain relevance, and missing body details; rules below that reject such items or imply attachment analysis need reconciliation before specification. No application implementation or reusable private prototype is assumed.
+
 ## Why LangGraph
 
 This product has a workflow with branching, retries, persisted state, human approval, and deterministic side effects. LangGraph is a better fit than an ad hoc chain because the application needs durable execution and clear control over when model output can affect calendars.
@@ -40,7 +44,7 @@ interface SchoolEmailState {
   threadId?: string;
 
   normalizedEmail?: NormalizedEmail;
-  approvedSource?: TrustedSource;
+  approvedSourceRule?: TrustedSourceRule;
 
   childMatches: ChildMatch[];
   topicMatches: TopicMatch[];
@@ -67,15 +71,15 @@ interface SchoolEmailState {
 
 ### Load Message
 
-Uses the provider connector to fetch full message details. Existing Outlook Graph client code is a starting point.
+Proposes using the provider connector to fetch approved-source message details. No provider client implementation exists in this repository yet.
 
 ### Normalize Email
 
-Converts provider payloads into normalized metadata and text. The current `extractTextFromHtml` utility can be reused if it handles real school email well enough.
+Proposes converting provider payloads into normalized metadata and body text. HTML normalization must be selected and validated using synthetic fixtures; no existing private utility is assumed.
 
-### Check Approved Source
+### Check Approved Source Rule
 
-Deterministic check against user-approved source addresses and domains. AI should not bypass this node.
+Deterministic check against user-approved source rules. The first release supports exact sender-address and sender-domain rules, applied per household rather than hardcoded by school or vendor. AI should not bypass this node.
 
 ### Classify Child And Topic
 
@@ -147,27 +151,29 @@ Stores digest-ready summaries and links to source evidence, review items, and ca
 flowchart TD
   A["Connected inbox"] --> B["Fetch recent senders"]
   B --> C["Score school likelihood"]
-  C --> D["Group by domain and sender"]
-  D --> E["Prepare suggestions"]
+  C --> D["Group by observed sender patterns"]
+  D --> E["Prepare rule suggestions"]
   E --> F["User approves or rejects"]
   F --> G["Persist trusted sources"]
 ```
 
-The current code already supports recent sender discovery and AI filtering. The new version should add explanations and user review rather than directly treating filtered sources as trusted.
+The planned workflow should provide recent sender discovery, AI-assisted filtering, explanations, and user review rather than directly treating filtered sources as trusted.
 
-## Daily Digest Graph
+## Digest Refresh Graph
 
 ```mermaid
 flowchart TD
-  A["Digest schedule fires"] --> B["Load digest window"]
-  B --> C["Collect relevant items"]
-  C --> D["Group by child and topic"]
-  D --> E["Prioritize actions and events"]
-  E --> F["Render digest"]
-  F --> G["Send or publish digest"]
+  A["Owner selects Check for updates"] --> B["Start digest refresh"]
+  A2["Four-hour background schedule"] --> B
+  B --> C["Fetch new approved-source messages"]
+  C --> D["Process and merge extracted items"]
+  D --> E["Load digest window"]
+  E --> F["Group by child and topic"]
+  F --> G["Prioritize actions and events"]
+  G --> H["Render and persist digest"]
 ```
 
-Digest generation can initially write a database record or API response before email/push delivery is implemented.
+The app should continue showing the cached digest while this workflow runs, then expose the refreshed persisted digest and check status. Email and push delivery are not part of the first release.
 
 ## Human Review
 

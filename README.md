@@ -1,8 +1,10 @@
 # School Email Assistant
 
-School Email Assistant helps parents turn school inbox noise into a daily, child-aware summary by identifying what matters, ignoring what does not apply to their children, and eventually maintaining a reliable calendar of events they actually care about.
+School Email Assistant helps parents turn school inbox noise into a date-aware, child-aware digest by identifying what matters and ignoring what does not apply to their children. Calendar integration is planned soon after the digest proves useful.
 
 This is a fresh implementation intended to stand on its own as a public project.
+
+Requirements discovery is paused at the [Version 0 trial snapshot](docs/product/requirements-workshop-v0.md). No application functionality has been implemented; the workshop snapshot is not a formal specification or implementation approval.
 
 ## Project Direction
 
