@@ -2,7 +2,7 @@
 
 ## Proposal Status
 
-This inherited conceptual model is preserved for the [Version 0 trial](product/requirements-workshop-v0.md), not accepted as a formal schema. Owner/viewer roles, multiple-child category and event assignments, and date-aware cached digests require reconciliation before specification. Calendar entities/policies are future-stage proposals; delivery fields do not imply proactive email in v1. Retention and credential storage remain unresolved.
+This inherited conceptual model is preserved for the [Version 0 trial](product/requirements-workshop-v0.md), not accepted as a formal schema. The relationship contract below reflects owner/viewer roles and multiple-child assignments. Physical tables, temporal storage, and cached digest implementation remain undecided. Calendar entities/policies are future-stage proposals; delivery fields do not imply proactive email in v1. Retention and credential storage remain unresolved.
 
 ## Proposed Core Entities
 
@@ -12,7 +12,7 @@ Owns users, children, sources, provider connections, topics, and digest policy.
 
 ### User
 
-Represents a parent or guardian who can configure sources, review candidates, and receive digests.
+Represents an authenticated household member. The owner manages connections, configuration, and corrections; invited guardians or students are read-only viewers. Every authorized viewer can access all household and child views.
 
 ### Child
 
@@ -63,18 +63,19 @@ Suggested fields:
 
 ### Topic Rule
 
-A natural-language preference or interest area explicitly assigned to one or multiple children. Category preferences have no implicit household-wide scope. The existing suggested fields below must be reconciled with this product decision before formal specification.
+A natural-language preference or interest area explicitly assigned to one or multiple children. Category preferences have no implicit household-wide scope. Child assignments are a collection, not a single child foreign key.
 
 Suggested fields:
 
 - `id`
 - `accountId`
-- `childId`
+- `childAssignments`: one or more explicitly selected children
+- `allChildrenSelected`: preserves the setup choice for new-child review
 - `name`
 - `description`
 - `includeExamples`
 - `excludeExamples`
-- `calendarPolicy`
+- `calendarPolicy`: future-stage only
 - `status`
 
 ### Email Message
@@ -117,33 +118,33 @@ Suggested fields:
 
 ### Extracted School Item
 
-Structured result from a processed email.
+Logical item extracted from approved-source body evidence; later clear updates can add supporting messages.
 
 Suggested fields:
 
 - `id`
 - `accountId`
-- `emailMessageId`
-- `childId`
+- `sourceEvidenceReferences`: one or more supporting email messages and excerpts; storage shape undecided
+- `childAssignments`: applicable children with participant-specific details
 - `topicRuleId`
 - `type`: `SUMMARY`, `ACTION`, `DEADLINE`, `EVENT`
 - `title`
 - `summary`
-- `dueAt`
+- Temporal evidence: original phrase, optional exact date or range, source timestamp, received timestamp, source specificity, interpretation certainty; storage shape undecided
 - `confidence`
 - `evidence`
 - `status`
 
 ### Calendar Event Candidate
 
-Validated candidate before or after calendar write.
+Future-stage candidate before or after calendar write. The suggested fields below do not settle participant mapping or candidate cardinality.
 
 Suggested fields:
 
 - `id`
 - `accountId`
 - `emailMessageId`
-- `childId`
+- `childAssignments`: applicable children with participant-specific details
 - `topicRuleId`
 - `title`
 - `description`
@@ -188,7 +189,7 @@ Suggested fields:
 
 ### Digest
 
-Represents a daily digest window and rendered output.
+Represents a view of cached, stored items; optional rendered output must be recalculated for the current household date. Display-time/midnight/resume placement is independent of inbox refresh. No database representation is selected; v1 does not send digest email.
 
 Suggested fields:
 
@@ -198,23 +199,37 @@ Suggested fields:
 - `windowEnd`
 - `status`
 - `renderedSummary`
-- `sentAt`
+- Last successful inbox check and current check status
 
 ## Relationships
 
+These are conceptual cardinalities, not selected Postgres tables.
+
+- A household account has one owner and separately authenticated read-only viewers.
+- A topic rule belongs to an account and has one or more child assignments. `All children` records an explicit owner choice; adding a child presents those categories preselected, and saving confirms the final assignments.
+- An extracted item belongs to the household and can have multiple child assignments. Each assignment preserves that child's role, arrival time, and instructions with evidence; shared audience details belong to the common item.
+- One item can retain evidence from several emails when a clear update replaces earlier details. Unresolved conflicts keep both sources for review.
+- Household and child digests reference the same logical item. They do not own independent event copies; a shared event appears once per applicable view and updates consistently.
+- A digest item need not have a date, time, or calendar candidate. Future candidate/link cardinalities and calendar participant mapping remain undecided.
+- Approved-source matching may involve overlapping exact-address and domain rules. The source-rule lifecycle is confirmed in [scenarios](product/reconciliation-scenarios.md#source-rule-lifecycle-r3); its evidence representation remains undecided.
+
 ```mermaid
 erDiagram
-  ACCOUNT ||--o{ USER : has
+  ACCOUNT ||--o{ USER : authorizes
   ACCOUNT ||--o{ CHILD : has
+  ACCOUNT ||--o{ TOPIC_RULE : configures
+  TOPIC_RULE ||--|{ TOPIC_CHILD_ASSIGNMENT : applies_through
+  CHILD ||--o{ TOPIC_CHILD_ASSIGNMENT : selected_for
   ACCOUNT ||--o{ PROVIDER_CONNECTION : connects
-  ACCOUNT ||--o{ TRUSTED_SOURCE : approves
-  CHILD ||--o{ TOPIC_RULE : has
+  ACCOUNT ||--o{ TRUSTED_SOURCE_RULE : approves
   PROVIDER_CONNECTION ||--o{ EMAIL_MESSAGE : fetches
-  TRUSTED_SOURCE ||--o{ EMAIL_MESSAGE : matches
+  TRUSTED_SOURCE_RULE }o--o{ EMAIL_MESSAGE : matches
   EMAIL_MESSAGE ||--o{ GRAPH_RUN : processed_by
-  EMAIL_MESSAGE ||--o{ EXTRACTED_SCHOOL_ITEM : yields
-  EXTRACTED_SCHOOL_ITEM ||--o{ CALENDAR_EVENT_CANDIDATE : may_create
-  CALENDAR_EVENT_CANDIDATE ||--o| CALENDAR_EVENT_LINK : syncs_to
-  ACCOUNT ||--o{ DIGEST : receives
-  DIGEST ||--o{ EXTRACTED_SCHOOL_ITEM : includes
+  EMAIL_MESSAGE }|--o{ EXTRACTED_SCHOOL_ITEM : supports
+  EXTRACTED_SCHOOL_ITEM ||--o{ ITEM_CHILD_ASSIGNMENT : applies_through
+  CHILD ||--o{ ITEM_CHILD_ASSIGNMENT : participates_in
+  ACCOUNT ||--o{ DIGEST : views
+  DIGEST }o--o{ EXTRACTED_SCHOOL_ITEM : references
 ```
+
+[Multi-child scenarios](product/reconciliation-scenarios.md#multiple-child-relationships-r2) give observable outcomes. Assignment boxes express relationships, not a choice of join tables versus another storage shape.

@@ -4,7 +4,9 @@
 
 School Email Assistant helps parents turn school inbox noise into a trusted date-aware digest. It should identify what matters, ignore school items that do not apply to the user's children, and explain those choices. Formal calendar candidates are planned for a later stage.
 
-Requirements discovery is paused at the [Version 0 trial snapshot](requirements-workshop-v0.md). This is a workshop record, not a formal specification or implementation approval.
+The Version 0 checkpoint is merged. Documentation reconciliation is complete; [review status](requirements-workshop-v0-review.md#reconciliation-status) tracks outcomes. Formal specification and implementation remain deferred.
+
+The [accepted MVP definition](mvp-definition.md) consolidates approvals. The owner accepted [documentation readiness](cached-digest-readiness.md#readiness-checklist) for cached digest display and source verification on 2026-10-12; formal specification writing remains deferred and requires separate authorization.
 
 ## Core Promise
 
@@ -43,36 +45,19 @@ These examples show two related needs: bringing relevant obligations to the fami
 
 ### Worthwhile First-Release Outcome
 
-Evaluate the first release after two weeks of normal use: the parent uses the digest as the main review surface, finds it less burdensome than checking individual emails, and experiences no surprises caused by the digest missing relevant events stated in approved-source email bodies in the connected inbox. No numeric time-saving baseline is required. Extend the pilot if too few events occur to judge coverage.
+The digest should become the primary review surface, reduce inbox-review burden, and avoid surprises from missed in-scope items. Evaluation timing and coverage limits live in [Confirmed Worthwhile Outcomes](../product-requirements.md#confirmed-worthwhile-outcomes).
 
 ## Initial Product Shape
 
-- Connect one owner-controlled inbox.
-- Suggest likely school senders from the previous 90 days of message metadata.
-- Let the user approve trusted sources.
-- Let the owner add a missing trusted source at any time.
-- Let the owner correct item relevance and child/category assignments, with corrections reflected in the digest and retained to improve future classification.
-- Learn from corrections within the household, preserving their context; propose broader category-preference changes for owner approval.
-- Configure children and topics.
-- Process approved-source messages.
-- Ignore irrelevant school items, such as events for another grade, class, club, sport, or child.
-- Generate a single date-aware digest that reduces the need to read through individual school emails.
-- Show supporting excerpts and source subject, sender, and received date; offer original-email links to the inbox owner where supported while letting household viewers read excerpts and metadata in the app.
-- Retain relevant items that refer to external instructions and state the specific missing detail, such as `Arrival time not provided in email`, so users know what to check in the original.
-- Apply clearly stated updates while retaining evidence; show unresolved conflicting details in `Needs review` with both source excerpts.
-- Offer household and child-specific digest views to every authorized viewer. Shared events appear once in the household view and in each applicable child's view, preserving child-specific details.
-- Let authorized household members view the digest.
-- Give each household member a separate account rather than sharing one household login.
-- Use passwordless one-time email-code sign-in with persistent sessions; let the owner invite viewers by email and revoke household access. Mailbox connection uses separate provider authorization. The auth provider is undecided; SMS codes are outside v1.
-- Surface relevant upcoming events for the next four weeks, emphasizing the next two weeks and giving weeks three and four lower prominence.
-- Show events from the past seven days in a clearly separate history section.
-- Show actions whose due date passed within the previous seven days in a separate `Past due date` section without implying they remain unfinished.
-- Provide a `Check for updates` action so the user can retrieve same-day changes before relying on an event's details.
-- Keep the cached digest reasonably current through background checks every four hours.
-- Show the cached digest on app open without making app opening itself trigger an inbox check.
-- Surface required forms, payments, schedule changes, supplies to bring, academic concerns, and requests for a parent response as action items with source dates, stated due dates or timeframes, and plain-language `Exact date`, `Date range`, or `Needs review` labels.
-- Show undated items for seven days after receipt, organized by received date and age, clearly distinguishing that fallback from a deadline; resolve relative timeframe language against the source email date.
-- Include important dates/events in the digest while deferring formal calendar event candidates to a second product stage.
+A React web digest backed by an API and Postgres comes first; React Native follows later. See [selected direction](../decisions/0005-preserve-selected-component-direction.md) for open implementation choices.
+
+- Owner connects the pilot inbox and approves configurable sources before body analysis.
+- Owner selects discovered categories and assigns children explicitly.
+- The digest preserves actions, dates, uncertainty, external-detail gaps, participant details, and source evidence.
+- Household and child views share logical items; invited viewers have separate read-only identities.
+- Owner corrections improve household classification without silently changing explicit preferences.
+
+The authoritative behavior and tuning values live in [Core User Journeys](../product-requirements.md#core-user-journeys), particularly [Date-Aware Digest](../product-requirements.md#date-aware-digest). [Synthetic scenarios](reconciliation-scenarios.md) record confirmed lifecycle, aging, and range expectations, with future-setting and implementation details explicitly deferred.
 
 ## Working Hypotheses
 
@@ -84,29 +69,9 @@ Evaluate the first release after two weeks of normal use: the parent uses the di
 
 These are working hypotheses, not confirmed release boundaries.
 
-## Category Discovery
+## Setup And Source Configuration
 
-During setup, the product scans 90 days of inbox metadata to suggest sources. After the owner approves source rules, it analyzes the complete set of matching message bodies from that same 90-day period to suggest announcement categories. The owner chooses what matters. The product should also suggest new categories as approved-source messages arrive. Historical discovery does not expand the agreed digest display windows.
-
-Sharing a generic category catalog across households is a future idea. Shared categories must not expose personal details or overly specific household information; the sanitization process remains unresolved.
-
-Newly discovered categories appear in `New possible categories`, where the owner chooses which ones matter. Potentially relevant items in a proposed category remain in `Needs review` while the decision is pending. Household viewers do not change category preferences.
-
-For each selected category, the owner explicitly selects individual children or `All children`. Categories may apply to one or multiple children; there is no implicit household-wide default.
-
-Adding a child includes a review of relevant categories, with existing `All children` categories preselected for the new child. The owner can adjust the selections; saving the child confirms the category assignments.
-
-An approved-source message directly naming a configured child and requesting action appears in `Needs review` even if its category is unselected or declined. The digest explains why this personalized obligation was retained.
-
-## General Source Model
-
-Different schools and communication systems organize sender identities differently. The product must not hardcode the first household's school domains or assume one matching strategy works everywhere.
-
-The owner should be able to approve an exact sender address or an entire sender domain, based on how a school communicates. These two rule types are sufficient for v1; address-pattern and stable-sender-identifier rules are deferred until examples demonstrate a need. The product may recommend a rule from observed metadata, but the owner remains authoritative. Trusted-source approval permits processing; relevance classification determines digest inclusion. Confidently irrelevant messages are omitted, while low-confidence relevance decisions appear in a compact `Needs review` section.
-
-## Pilot Source Configuration
-
-Synthetic examples use changing staff display names and opaque plus-address identifiers on `school-platform.example`. The owner approves that platform domain once so new staff senders are not missed. A direct-teacher example uses `teacher@school.example`. These preserve configurable source-trust requirements; they are not real account details or universal defaults.
+See [Choose School Sources](../product-requirements.md#choose-school-sources) for approval and discovery, [Configure Children And Topics](../product-requirements.md#configure-children-and-topics) for categories and personalized-action review, and [Synthetic Pilot Source Configuration](../product-requirements.md#synthetic-pilot-source-configuration) for example platform and direct-teacher rules. Source trust permits processing; relevance determines visibility. These are configurable household rules, not universal school defaults.
 
 ## Non-Goals For The First Version
 

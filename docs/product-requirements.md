@@ -2,7 +2,7 @@
 
 ## Version 0 Status
 
-Requirements discovery is paused. This document preserves the Version 0 workshop trial, not a formal specification or authorization to implement. See [Trial Snapshot](product/requirements-workshop-v0.md) for decision labels, provisional defaults, and unresolved boundaries.
+The Version 0 workshop checkpoint has been merged into main. Documentation reconciliation is complete; formal specification and implementation remain deferred. See [Trial Snapshot](product/requirements-workshop-v0.md) for decision labels and [Review](product/requirements-workshop-v0-review.md#reconciliation-status) for finding status.
 
 ## Problem
 
@@ -28,19 +28,21 @@ Generalized problem examples are a school event noticed too late to plan around 
 - Present relevant information in one digest so the user does not need to read through every school email.
 - Let authorized household members use separate accounts to view the digest without requiring them to connect an inbox.
 - Show relevant upcoming events within a fixed four-week horizon, emphasizing the next two weeks over weeks three and four.
-- Show events from the past seven days in a clearly separate section.
+- Show past events in a clearly separate history section, defaulting to seven days.
 - Let the user check for new messages on demand so same-day event changes can be retrieved before relying on the digest.
 - Check the connected inbox in the background every four hours so the cached digest remains reasonably current between manual checks.
 - Collect user feedback so source and topic matching improves over time.
 
 ## Product Surfaces
 
-The following are provisional architecture proposals, not a selected application stack:
+The product owner selected these major components; this direction is restored in [Decision 0005](decisions/0005-preserve-selected-component-direction.md):
 
 - A React web application as the first user-facing surface.
 - A React Native phone application after the web workflow and API contracts are stable.
 - A backend API service for accounts, provider connections, preferences, digests, and review flows.
 - A Postgres database for persisted product state, provider metadata, graph state, extracted items, and audit records.
+
+The backend framework, detailed schema, authentication vendor, deployment topology, and hosting remain undecided. Component selection does not authorize implementation.
 
 The first implementation should prioritize the web app, API service, and database. The phone app should be planned as part of the product architecture, but it does not need to be built before the web version proves the core workflows.
 
@@ -97,9 +99,13 @@ Each action item should show the source email date and one of:
 - A resolved date range for a broad timeframe such as "next week"
 - A clear indication that the source provided no due date or timeframe
 
+A source date range such as `Oct 2–6` includes both endpoint calendar days unless the source explicitly says otherwise (for example, `before Oct 6`). Preserve any explicit time limits or uncertainty rather than overriding them with the inclusive-day convention.
+
 The digest should preserve the source's original timeframe language as evidence. It must not turn a broad timeframe into a fabricated exact deadline.
 
-When the body provides no event date, due date, or timeframe, use the email's received date to organize the item and show its age, clearly labeled as the received date rather than an event date or deadline. Keep these undated items visible for seven days after receipt. Relative phrases remain resolved against the source email date, with the original phrase retained; items with explicit or resolved dates use those dates for placement instead of this fallback.
+When the body provides no event date, due date, or timeframe, use the email's received date to organize the item and show its age, clearly labeled as the received date rather than an event date or deadline. Keep these undated items visible for seven household-local calendar dates, counting the received date as day one. They leave the digest at midnight starting day eight: an item received Sept 27 at 18:00 remains eligible through Oct 3 and leaves at 00:00 Oct 4. This is calendar-day aging, not 168 elapsed hours. Pending review items remain accessible in the owner review queue after leaving the digest. Relative phrases normally resolve against the source email date, using the estimated received-date fallback below when the source timestamp is missing or unreliable; retain the original phrase. Items with explicit or resolved dates use those dates for placement instead of this undated fallback.
+
+When the source sent timestamp is missing or unreliable, use the received timestamp in the household timezone to estimate relative dates. Show the estimate with `Estimated from received date`, explain that the source timestamp was unavailable or unreliable, and preserve the original phrase and received timestamp. For an email received Oct 4 saying “tomorrow,” estimate Oct 5. Every such fallback estimate routes to `Needs review`, even when the relative phrase yields a single computed date. Show both `Needs review` and `Estimated from received date`; do not label a fallback-derived single date `Exact date`. For a fallback-derived range, also show `Date range` to preserve its breadth. The estimate is not a confidently resolved source date and does not imply future calendar-write eligibility.
 
 Each temporal item should communicate two separate qualities:
 
@@ -112,7 +118,8 @@ The first release should communicate these qualities with plain-language labels 
 
 - `Exact date` for a specific source date or a clearly resolved exact relative date
 - `Date range` for a broad but resolvable timeframe
-- `Needs review` when the timeframe cannot be interpreted confidently
+- `Needs review` when the timeframe cannot be interpreted confidently, including every received-date fallback estimate
+- `Estimated from received date` alongside `Needs review` for that fallback; also retain `Date range` when the estimate is a range
 
 ### Confirmed Worthwhile Outcomes
 
@@ -144,7 +151,7 @@ One owner-controlled personal Outlook/Hotmail inbox is selected for the pilot. C
 
 ### Choose School Sources
 
-The system scans message metadata from the previous 90 days and suggests likely school-related sources. The household owner accepts, rejects, or edits the suggestions. The owner can also add a missing source at any time, including after initial setup.
+During first-time setup, the system scans message metadata from the previous 90 days and suggests likely school-related sources. The household owner accepts, rejects, or edits the suggestions. The owner can also add a missing source at any time, including after initial setup.
 
 Examples:
 
@@ -155,7 +162,9 @@ Examples:
 
 AI can rank and explain suggestions, but only user-approved sources should create downstream summaries.
 
-Suggestion is not approval. Message content from an unapproved source must not enter content-analysis workflows. Source discovery scans metadata from the previous 90 days; after owner approval, category discovery analyzes matching message bodies from that same period.
+Suggestion is not approval. Message content from an unapproved source must not enter content-analysis workflows. During first-time setup, source discovery scans metadata from the previous 90 days; after owner approval, category discovery analyzes matching message bodies from that same period.
+
+When a new source is approved after setup, analyze matching messages from a 14-calendar-date window including approval day. Reapproving a disabled source uses the same 14-date window including reapproval day, including matching messages received while it was disabled. Reconcile with existing items rather than creating duplicates or resetting their received dates. The 90-day lookback is only for first-time setup. These processing windows do not expand the digest display windows. Count the triggering household-local date as the final included date, start at midnight on the first included date, and stop at the triggering check time. For approval Oct 4 at noon, the 14-date backfill begins Sept 21 at 00:00 and includes messages through Oct 4 noon. The first-time 90-date discovery window uses the same convention: a scan triggered Oct 4 at noon begins July 7 at 00:00. Category discovery during setup uses that same initial discovery window. Do not scan the future remainder of the triggering day.
 
 Source approval granularity varies by school and communication system. The product must not hardcode the first user's school domains, ParentSquare behavior, or a single universal matching strategy.
 
@@ -167,6 +176,8 @@ The confirmed first-release source-rule types are:
 Address-pattern and stable-sender-identifier rules are deferred until examples demonstrate a need for them.
 
 The system may recommend a rule based on observed metadata and should explain its breadth, but the household owner chooses and approves the rule. A broad domain rule permits processing from that domain; it does not force every message into the digest.
+
+When the owner narrows or disables an approval, stop analyzing new messages no longer covered by an active approved rule. Retain and continue displaying previously approved items under the ordinary digest display rules, with a warning when their source is no longer approved. Narrowing or disabling is not deletion. Another active covering rule still permits analysis; do not label that source unapproved merely because one rule changed. See [source lifecycle scenarios](product/reconciliation-scenarios.md#source-rule-lifecycle-r3) for confirmed outcomes.
 
 ### Synthetic Pilot Source Configuration
 
@@ -198,13 +209,13 @@ Initial category discovery uses the complete set of messages from the previous 9
 
 The historical category-discovery window is separate from digest display: only relevant extracted items within the agreed upcoming and past windows enter the dated digest sections.
 
-During ongoing use, newly discovered categories appear in a separate `New possible categories` section that asks the household owner which ones they care about. The owner selects or declines each category. Until that decision, potentially relevant items in the proposed category remain visible in `Needs review` rather than automatically entering the primary digest or being silently hidden. Household viewers remain read-only and do not make category decisions.
+During ongoing use, newly discovered categories appear in a separate `New possible categories` section that asks the household owner which ones they care about. The owner selects or declines each category. Undecided category suggestions remain available in `New possible categories` until the owner decides, even after their supporting items leave the digest; the suggestions do not expire after seven days. Until that decision, potentially relevant items in the proposed category appear in the digest’s `Needs review` section rather than automatically entering the primary digest or being silently hidden. Undated items awaiting a category decision leave the digest after the ordinary seven-day received-date window, but remain accessible in an owner review queue until decided; aging out of the digest does not discard the pending item. The same queue transition for undated conflicts and uncertain child assignments is described in [Date-Aware Digest](#date-aware-digest). Household viewers remain read-only and do not make category decisions.
 
 For every selected category, the owner explicitly chooses which children it applies to. The selection offers individual children and an `All children` option. A category can apply to one or multiple children; selecting `All children` applies it to every configured child. Category preferences have no implicit household-wide scope. The same child-selection behavior applies during setup and when deciding newly suggested categories.
 
 When adding a child, show all relevant categories for owner review and preselect categories already marked `All children` for that child. The owner can adjust these selections and choose other relevant categories during this step. Saving the child confirms the selected category assignments; suggestions do not take effect before saving.
 
-For approved-source messages, category preferences must not silently hide a personalized obligation: when a message directly names a configured child and requests action, show the relevant item in `Needs review` even if its category is unselected or declined. Explain that the child's direct mention and action request triggered this exception. The message still requires approved-source status; this exception does not grant trust to a new sender.
+For approved-source messages, category preferences must not silently hide a personalized obligation: when a message directly names a configured child and requests action, show the relevant item in `Needs review` even if its category is unselected or declined. Explain that the child's direct mention and action request triggered this exception. The message still requires approved-source status; this exception does not grant trust to a new sender. A direct teacher message naming a configured child and requesting action also overrides an explicit topic ignore rule by going to `Needs review`, with that reason explained. A general school-wide newsletter does not trigger this exception merely because it contains many dates, news items, or a generic request; it follows ordinary child-aware relevance and ignore rules. Personalization is about the message's child-specific request, not just the sender being a teacher. A later item-specific owner correction takes precedence on reprocessing the same message; see [Owner Corrections And Feedback](#owner-corrections-and-feedback).
 
 Each child should have a profile:
 
@@ -225,6 +236,8 @@ Generic categories learned across households could eventually help new users con
 
 ### Date-Aware Digest
 
+During household setup, prefill a detected timezone for the owner to confirm or change. Save the confirmed household timezone and use it for date interpretation, day boundaries, and all household/child views; viewers’ device timezones do not independently change those rules. If detection is unavailable, the owner must select a timezone before confirming it. No timezone-detection implementation is selected.
+
 The digest offers a household view and individual child views. A shared event appears once in the household view, labeled with all applicable children and any child-specific times or instructions. It also appears once in each applicable child's view. These are views of the same event, so updates remain consistent across views. Every authorized viewer can access all of these views.
 
 The digest should provide one place to review:
@@ -236,26 +249,44 @@ The digest should provide one place to review:
 - Relevant dates or events mentioned in email, without promoting irrelevant items into the user's attention stream
 - Distinct times for different participants when a message provides them, such as student arrival time and parent start time
 - Items whose dates, times, audience, or required actions are unclear
-- An `Exact date`, `Date range`, or `Needs review` label for each temporal item
+- Temporal labels following [Confirmed Action Categories](#confirmed-action-categories), including paired `Needs review` and `Estimated from received date` for every received-date fallback
 - Confidently ignored items only when the user asks to inspect them
 - Low-confidence relevance decisions in a compact `Needs review` section showing sender, subject, received date, and why relevance is uncertain
-- Events from the previous seven days in a separate, clearly labeled past section
+- Events from the history window in a separate, clearly labeled past section, defaulting to the previous seven complete calendar days
 
-Past events must not be visually mixed with upcoming events. The first release does not need a user-configurable time horizon.
+Undated review items with conflicting instructions or uncertain child assignments also leave the digest after the seven-day received-date window and remain accessible in the owner review queue until decided. Preserve their uncertainty and source evidence; moving an item out of the digest does not resolve or discard it. The calendar-day expiry rule is defined in [Confirmed Action Categories](#confirmed-action-categories).
 
-When an action's due date passes, move it into a separate `Past due date` section within the same seven-day history window used for past events. This label describes the date only: v1 has no completion tracking and must not claim that the action is unfinished. This is the initial display rule and may be revisited after pilot feedback.
+An event whose date range spans today appears once in the current/upcoming section, labeled `Ongoing`, with its complete original range preserved. Do not also duplicate it in the past section. A relevant event range is eligible for current/upcoming display when any part overlaps the upcoming window. Preserve the full source range even when it extends beyond the four-week horizon; do not clip it or require the entire range to fit. The upcoming window covers 28 household-local calendar dates including today: from the start of today through the end of day 27 after today. With today Oct 4, include Oct 4–31; a single-date Nov 1 event is outside the window. The first two weeks cover the first 14 dates (Oct 4–17), followed by weeks three and four (Oct 18–31). An event range receives the first-two-week emphasis when any part overlaps those first 14 dates. Show the event once with its complete range rather than duplicating or clipping it across prominence groups; an Oct 16–20 event is emphasized, while an Oct 18–20 event has lower prominence.
+
+By default, history covers the seven complete household-local calendar days before today, from the start of day seven days ago through the end of yesterday; today belongs to current/upcoming. With today Oct 4, include Sept 27–Oct 3, including both dates. A past event range is eligible for history when any part overlaps this window. Preserve its complete source range even if it began before the window. An event still spanning today follows the ongoing rule above and is not duplicated in history.
+
+Past events must not be visually mixed with upcoming events. The first release uses a fixed seven-day history period with no user-facing setting. Keep the history period as a separate configuration value consumed by window calculation rather than embedding seven-day assumptions throughout the product, so it can readily become a user setting later. Do not build that setting in the first release. Supported values and who may change it are future-setting decisions. The upcoming horizon remains fixed at four weeks; this history preference does not change source-processing lookbacks or undated-item aging.
+
+When an action's due date passes, move it into a separate `Past due date` section within the same seven-day history window used for past events. For an action with a date range, enter `Past due date` only after the final day of that range ends in the household timezone. Preserve the entire range and original phrase; this placement does not convert the range into an exact source deadline. This label describes the date only: v1 has no completion tracking and must not claim that the action is unfinished. This is the initial display rule and may be revisited after pilot feedback.
 
 The first release will use a date-aware web app view with low-frequency background checks and an explicit `Check for updates` action. A daily digest email is not the default because it would add to the inbox volume the product is intended to reduce. Proactive notifications and near-real-time background fetching are deferred so the first release can be delivered more quickly.
 
-Opening the app should display the cached digest without app opening itself triggering an inbox check. The cached digest may include messages retrieved by four-hour background checks. The household owner can select `Check for updates` to start an immediate inbox check. The digest should display when it last checked the inbox successfully and whether a check is currently running or failed. When a newer message changes the time, location, requirements, or other material details of an existing event, the digest should identify that event as updated and show the current information with source evidence.
+Opening the app displays a digest from cached, stored items without itself triggering an inbox check. Calculate placement, age, history eligibility, and two-week emphasis using the current household-local date whenever the view is displayed; yesterday’s rendered output is not authoritative for today’s placement. Recalculate an active view when the household date changes at midnight. If the view was suspended or inactive, recalculate on resume before presenting its current placement. Apply the same rules to household and child views without fetching email or rerunning content analysis. Recalculation can bring an already stored item into the new window, move it to history or `Past due date`, or remove it from the digest under the existing aging rules. Pending review items remain accessible in their review queue. Absolute dates already interpreted from source or received timestamps do not shift merely because today changed.
+
+The cached items may include messages retrieved by four-hour background checks. The household owner can select `Check for updates` to start an immediate inbox check. The digest should display when it last checked the inbox successfully and whether a check is currently running or failed. Date-only recalculation must not advance the last successful inbox-check timestamp, clear a check failure, or mark an item as materially updated by a new message. Timer, rendering, and storage mechanisms remain implementation choices.
+
+When a digest has no currently displayable items, use a contextual empty message that distinguishes `No successful inbox check yet` from `No relevant items in the current display windows` after a successful check. Keep existing check-status and last-success information visible, including any later failure. An empty view does not mean there are no school obligations, expand coverage, change check triggers, or resolve pending review/category items. Exact copy and layout can be validated later while preserving this distinction. See [Decision 0008](decisions/0008-distinguish-empty-digest-check-history.md) for approval provenance.
+
+When a newer message changes the time, location, requirements, or other material details of an existing event, the digest should identify that event as updated and show the current information with source evidence.
 
 The four-hour cadence should be an operational configuration value, not a user-facing preference in the first release, so it can be tuned later without changing digest behavior.
 
 When newer source information clearly replaces earlier details for the same event or action, present the replacement as the current information and retain evidence of the change. Recency alone does not resolve a contradiction. If the messages conflict without a clear replacement, show the item in `Needs review` with both supporting excerpts and their source metadata; identify the conflicting detail instead of choosing a value without adequate evidence.
 
+For a dated event that approved-source email body information clearly identifies as canceled, keep the event at its scheduled date with a prominent `Canceled` label. Preserve its scheduled date/range and supporting evidence, and apply ordinary upcoming/history display eligibility. Make cancellation clear rather than presenting it as an active commitment. This adds no separate canceled-events section or display window and does not decide data deletion or storage retention. Cancellations without a usable date, uncertain event matches, reinstatement, and cancellation of a separate action remain open for scope review. See [Decision 0006](decisions/0006-display-clearly-canceled-dated-events.md) for approval provenance.
+
+When a clearly canceled dated event range spans today, show `Canceled` without `Ongoing`. Keep the event once in current/upcoming, preserve its complete scheduled range and supporting evidence, and apply ordinary eligibility, emphasis, and history rules. This label exception avoids suggesting that a canceled event is happening; see [Decision 0010](decisions/0010-suppress-ongoing-label-for-canceled-ranges.md) for approval provenance.
+
 ### Owner Corrections And Feedback
 
 The household owner can mark a review item relevant or irrelevant and correct its child and category assignments. Corrections should update the current digest and be retained as feedback to improve future classification. The owner must also be able to correct an ordinary digest item or an item inspected in the filtered-items view, so confidently wrong decisions can be recovered.
+
+When the owner marks a specific item irrelevant, keep that item hidden on reprocessing the same email, even if it otherwise qualifies for the personalized child-action exception. The explicit item correction wins; replay must not reopen `Needs review` or silently change broader category preferences. A later approved-source follow-up that materially changes the obligation returns to `Needs review`, with the changed requirement explained and the earlier correction retained as context. An unchanged reminder stays hidden under the specific-item correction. A new message or more recent timestamp alone is not a material change.
 
 This feedback concerns relevance and classification, not action completion. Household viewers remain read-only. Use individual corrections to improve classification of similar future messages within the same household, preserving the context of the correction. For example, rejecting a trip for another grade should improve grade matching without disabling relevant field trips. Broader changes to explicit category preferences or child assignments must be proposed for owner approval rather than applied silently. Cross-household learning from corrections is a future decision and is outside v1.
 
@@ -269,6 +300,8 @@ Source discovery uses message metadata; category discovery and digest extraction
 
 When the body identifies a relevant event or action but refers to an attachment or linked page for essential details, retain the item with the information available in the body. State specifically what is missing, such as `Arrival time not provided in email`, and explain the body's reference to external instructions using a supporting excerpt. Do not infer the contents of the attachment or linked page. Show the source subject, sender, and received date, plus an original-email link for the owner where supported, so the user can check the missing details.
 
+Digest completeness is independent of future calendar-write eligibility: missing or ambiguous dates/times and missing external details must remain visible under the digest relevance and display rules. A missing time does not imply an all-day event. See [reconciliation scenarios](product/reconciliation-scenarios.md#digest-completeness-r1).
+
 ### Planned Second Stage: Calendar Integration
 
 Calendar integration is not part of the first release, but it is the planned near-term follow-on once the digest proves useful. Calendar automation must be policy-driven:
@@ -279,6 +312,10 @@ Calendar integration is not part of the first release, but it is the planned nea
 - Never add calendar events for this topic/source
 
 Calendar writes should be reversible and auditable. Every created event should link back to the source email when the provider allows it.
+
+### Reconciliation Evidence And Remaining Questions
+
+[Review findings](product/requirements-workshop-v0-review.md#reconciliation-status) are resolved with [synthetic scenarios](product/reconciliation-scenarios.md) covering lifecycle, precedence, and date boundaries. Clearly canceled dated-event display is accepted in [Decision 0006](decisions/0006-display-clearly-canceled-dated-events.md); remaining cancellation cases, privacy retention, authentication details, and classification/matching validation remain separate [open questions](open-questions.md). These documentation decisions do not authorize implementation.
 
 ## Functional Requirements
 
@@ -293,8 +330,8 @@ Calendar writes should be reversible and auditable. Every created event should l
 - Apply the selected source-rule granularity independently for different schools and communication systems.
 - Generate source suggestions from recent message metadata and explain why each source was suggested.
 - Limit initial source discovery to message metadata from the previous 90 days.
-- After source approval, discover announcement categories from matching message bodies in the same 90-day window and let the owner choose relevant categories.
-- Present newly discovered categories in `New possible categories` for owner selection, retaining potentially relevant items in `Needs review` while the category decision is pending.
+- During first-time setup, discover announcement categories from approved-source message bodies in the same 90-date discovery window. After setup, newly approved or reapproved sources use the 14-date backfill defined above.
+- Present newly discovered categories in `New possible categories` for owner selection, retaining potentially relevant items in `Needs review` while the category decision is pending, with undated items moving out of the digest into an accessible owner review queue after the seven-day window.
 - Require explicit child selection for each chosen category, offer an `All children` option, and use those assignments when evaluating relevance.
 - Route approved-source messages that directly name a configured child and request action to `Needs review` when their category is unselected or declined, explaining the exception.
 - When adding a child, present relevant categories for review, preselect existing `All children` categories, and confirm the owner's adjusted selections when saving the child.
@@ -304,7 +341,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 - Route low-confidence relevance decisions to a compact `Needs review` section with enough metadata to support a decision.
 - Extract digest-ready event details including date, participant-specific times, title, location, description, confidence, and source evidence.
 - Extract in-scope action items with the source email date, any stated due date or timeframe, and source evidence.
-- Resolve relative date phrases against the source message timestamp in the household timezone.
+- Resolve relative date phrases against the source message timestamp in the household timezone; when it is missing or unreliable, estimate from the received timestamp with a clear fallback label.
 - Preserve the original date or timeframe phrase alongside any resolved date or range.
 - Show a short supporting excerpt and source subject, sender, and received date for digest and review items, with an original-email link for the inbox owner where supported.
 - Retain relevant items whose body refers to external instructions, identify the specific missing details, and provide source metadata to help users locate the email.
@@ -322,7 +359,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 - Separate actions whose due date has passed into `Past due date` without implying that they are incomplete.
 - Provide an on-demand inbox check, display its status and last-successful-check time, and distinguish materially updated events from unchanged events.
 - Run inbox checks every four hours, with the cadence stored as operational configuration rather than hardcoded.
-- Do not make app opening itself trigger an inbox check.
+- Do not make app opening itself trigger an inbox check. Recalculate date-dependent display from stored items on display, at household-local midnight for active views, and on resume for suspended views; do not change inbox-check status for this recalculation.
 - Give each authorized household viewer a separate identity and access to the digest independently of inbox connection ownership.
 - Give every authorized viewer access to the complete household digest and child-specific views, without per-child access restrictions.
 - Display shared events once in the household view and once in each applicable child's view, preserving child-specific times and instructions.
@@ -345,7 +382,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 - The household owner can connect the selected Hotmail/Outlook account and approve school-related senders.
 - Initial source discovery considers 90 days of message metadata without processing unapproved message content.
 - Initial category suggestions come from the complete 90-day set of approved-source messages, with source approval preceding body analysis.
-- A newly encountered category appears in `New possible categories`, and its potentially relevant items remain in `Needs review` until the owner chooses whether the category matters.
+- A newly encountered category appears in `New possible categories`, and its potentially relevant items remain reviewable until the owner chooses whether the category matters; undated items leave the digest after seven days but remain accessible in the owner review queue.
 - The owner can assign a category to one or multiple children; category relevance is evaluated for the selected children without an implicit household-wide default.
 - Adding a child presents relevant categories with existing `All children` categories preselected; saving applies the owner's final selections to that child.
 - An approved-source message directly naming a configured child and requesting action remains visible in `Needs review` even when its category is unselected or declined.
@@ -359,14 +396,14 @@ Calendar writes should be reversible and auditable. Every created event should l
 - The system can produce structured summaries, topic matches, required actions, deadlines, and upcoming event details.
 - The digest identifies each in-scope action category and shows when its source email was sent.
 - The digest preserves and resolves stated due dates or timeframes without converting vague ranges into fabricated exact deadlines.
-- The digest distinguishes exact dates from ranges and clearly marks interpretations that need review.
+- The digest distinguishes exact dates from ranges and clearly marks interpretations that need review. Every received-date fallback appears in `Needs review` with `Estimated from received date`, including a single computed date; a fallback-derived range also retains `Date range`, and a fallback-derived single date is not labeled `Exact date`.
 - Temporal certainty is communicated with plain-language labels rather than numeric confidence scores.
 - The digest clearly identifies action items whose source provides no due date or timeframe.
-- Items with no stated date or timeframe remain visible for seven days after receipt, organized by received date without presenting it as an event date or deadline.
+- Items with no stated date or timeframe remain visible for seven household-local calendar dates including receipt day and leave at midnight starting day eight, without presenting received date as an event date or deadline. Pending review items remain accessible in the owner review queue.
 - The digest distinguishes role-specific times when the source does, including student arrival time and parent start time.
 - The digest presents relevant upcoming information relative to the current date without requiring a calendar connection.
-- The digest shows the next four weeks, emphasizes the next two weeks, and keeps the previous seven days in a clearly separate past section.
-- An action moves to `Past due date` after its due date passes, without an unsupported completion-status claim.
+- The digest shows the next four weeks, emphasizes the next two weeks, and keeps the default previous seven complete calendar days in a clearly separate past section.
+- An action moves to `Past due date` after its due date passes, without an unsupported completion-status claim. Stored items enter/leave display windows and change emphasis using today’s household-local date even without an inbox check; an active view updates at midnight, and a suspended view updates on resume. The last successful inbox-check timestamp and interpreted source dates remain unchanged.
 - After a successful user-initiated check, a material same-day event update is visible and clearly marked as an update.
 - A clear replacement updates the displayed event or action details with retained evidence; an unresolved conflict shows both supporting sources in `Needs review` without presenting an unsupported resolution.
 - The user can see when the inbox was last checked successfully and whether the current check succeeded or failed.

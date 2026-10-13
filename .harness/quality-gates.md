@@ -23,4 +23,4 @@ Expected checks once code exists:
 - UI mock contract checks
 - Accessibility checks for user-facing flows
 
-Exact commands should be added here once the stack is selected.
+Exact commands should be added here once the implementation tooling is selected.

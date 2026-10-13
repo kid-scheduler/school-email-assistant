@@ -2,7 +2,7 @@
 
 ## Proposal Status
 
-Requirements discovery is paused at the [Version 0 trial snapshot](product/requirements-workshop-v0.md). The detailed processing graph, state types, and nodes below are inherited proposals, not a formal specification. Calendar policy, provider deduplication, writes, and formal event candidates are future-stage only. Digest processing must preserve undated items, uncertain relevance, and missing body details; rules below that reject such items or imply attachment analysis need reconciliation before specification. No application implementation or reusable private prototype is assumed.
+Documentation reconciliation separates the digest contract from future calendar eligibility. The graph and state types are conceptual proposals, not a formal specification. Calendar candidates, policy, deduplication against calendars, and writes are future-stage only. See [R1 scenarios](product/reconciliation-scenarios.md#digest-completeness-r1) and [review status](product/requirements-workshop-v0-review.md#reconciliation-status).
 
 ## Why LangGraph
 
@@ -14,23 +14,20 @@ LangChain can still be used for model wrappers, prompt templates, structured out
 
 ```mermaid
 flowchart TD
-  A["New or recent email"] --> B["Load provider message"]
-  B --> C["Normalize body and metadata"]
-  C --> D["Check approved source"]
-  D -->|Not approved| E["Store minimal metadata and stop"]
-  D -->|Approved| F["Classify child and topic"]
-  F --> G["Match user interests"]
-  G -->|No match| H["Mark ignored"]
-  G -->|Match| I["Extract summary, actions, deadlines, events"]
-  I --> J["Validate dates and event completeness"]
-  J --> K["Deduplicate events"]
-  K --> L["Apply calendar policy"]
-  L -->|Summary only| M["Add to digest"]
-  L -->|Needs approval| N["Queue review"]
-  L -->|Auto-add high confidence| O["Create or update calendar event"]
-  O --> M
-  N --> M
+  A["Message metadata"] --> B["Check owner-approved source"]
+  B -->|Not approved| C["Stop body analysis"]
+  B -->|Approved| D["Load and normalize body"]
+  D --> E["Classify children and categories"]
+  E --> F["Evaluate relevance and owner feedback"]
+  F -->|Confidently irrelevant| G["Filtered-items view"]
+  F -->|Relevant or uncertain| H["Extract items and source evidence"]
+  H --> I["Validate digest fidelity and expose missing details"]
+  I --> J["Merge clear updates or retain conflicts"]
+  J --> K["Apply digest placement or Needs review routing"]
+  K --> L["Persist cached household and child views"]
 ```
+
+The source gate precedes body analysis. Undated or incomplete items do not pass through a calendar validator to enter the digest. Review aging and ignore-rule precedence follow the confirmed [product rules](product-requirements.md#configure-children-and-topics) and [scenarios](product/reconciliation-scenarios.md#review-aging-and-precedence-r4).
 
 ## Proposed Graph State
 
@@ -49,20 +46,16 @@ interface SchoolEmailState {
   childMatches: ChildMatch[];
   topicMatches: TopicMatch[];
   extractedItems: ExtractedSchoolItem[];
-  eventCandidates: CalendarEventCandidate[];
 
   validationErrors: ValidationError[];
-  duplicateMatches: DuplicateEventMatch[];
+  itemMatches: ExistingItemMatch[];
 
   processingDecision?:
     | "IGNORE"
-    | "SUMMARY_ONLY"
-    | "REQUEST_APPROVAL"
-    | "AUTO_ADD_EVENT"
-    | "UPDATE_EXISTING_EVENT";
+    | "DIGEST"
+    | "NEEDS_REVIEW";
 
   digestItems: DigestItem[];
-  calendarWriteResults: CalendarWriteResult[];
   audit: GraphAuditEntry[];
 }
 ```
@@ -103,47 +96,35 @@ Uses structured output to extract:
 - Summary
 - Required actions
 - Forms and deadlines
-- Event candidates
-- Attachments or links requiring review
+- Digest event details, including child-specific participant details
+- Body references to attachments or links with specific missing details (no external content analysis)
 
 Each extracted item should include evidence from the email.
 
-### Validate Events
+### Validate Digest Fidelity
 
-Deterministic validation node:
+Deterministic checks preserve evidence and expose uncertainty rather than rejecting relevant information for missing calendar fields:
 
-- Reject missing date or title.
-- Reject ambiguous dates like "next Friday" unless the sent date resolves it confidently.
-- Normalize timezone.
-- Require a start time or mark as all-day.
-- Preserve original source text.
+- Preserve missing dates, broad ranges, and original phrases; never invent a deadline or all-day status.
+- Resolve relative phrases against the source timestamp in the household timezone; setup prefills a detected timezone for owner confirmation, and all household views use that saved timezone.
+- When the source timestamp is missing or unreliable, estimate relative dates from the household-local received timestamp, preserve the original phrase, and always route the estimate to `Needs review` with `Estimated from received date`. A single computed date is not labeled `Exact date`; a range also retains `Date range`.
+- Keep specificity distinct from interpretation certainty; uncertain interpretations go to `Needs review`.
+- Keep distinct child/participant times and state which details the body omits.
+- Retain items referring to external instructions without reading those instructions.
 
-### Deduplicate Events
+### Match And Merge Digest Items
 
-Checks local database and calendar provider for likely duplicates by:
-
-- Source message ID
-- Prior event candidate hash
-- Calendar provider event ID
-- Title/date/location similarity
-
-### Apply Calendar Policy
-
-Routes based on source, topic, child, confidence, and user settings:
-
-- Ignore
-- Summary only
-- Request approval
-- Auto-add
-- Update existing event
-
-### Calendar Write
-
-Creates or updates a provider event only after policy and validation permit it. This node should be idempotent.
+Match existing logical items using source evidence. Clear replacements update the common item and applicable child details across views; recency alone does not settle a conflict. Conflicts retain both sources in `Needs review`. Matching mechanics remain undecided.
 
 ### Digest Inclusion
 
-Stores digest-ready summaries and links to source evidence, review items, and calendar write outcomes.
+Persist summaries and evidence independently of calendar eligibility. Apply the [digest display rules](product-requirements.md#date-aware-digest); confirmed range and review-aging boundaries are recorded in [scenarios](product/reconciliation-scenarios.md).
+
+### Future Calendar Eligibility And Writes
+
+Only a later calendar stage may create formal candidates from digest evidence. A deterministic eligibility validator must require a supported title, date, timezone, and a supported start time or explicit all-day interpretation. Missing or ambiguous fields block writing rather than removing the digest item. A missing time alone never establishes all-day semantics.
+
+Calendar-provider deduplication, policy evaluation, approval, and idempotent writes occur after eligibility validation. Exact policies and candidate schemas remain unresolved; no v1 branch performs calendar access or writes.
 
 ## Source Discovery Graph
 
@@ -167,13 +148,25 @@ flowchart TD
   A2["Four-hour background schedule"] --> B
   B --> C["Fetch new approved-source messages"]
   C --> D["Process and merge extracted items"]
-  D --> E["Load digest window"]
-  E --> F["Group by child and topic"]
-  F --> G["Prioritize actions and events"]
-  G --> H["Render and persist digest"]
+  D --> E["Persist stored items and inbox-check status"]
+  E --> F["Display using current household date"]
 ```
 
-The app should continue showing the cached digest while this workflow runs, then expose the refreshed persisted digest and check status. Email and push delivery are not part of the first release.
+The app continues displaying stored items with current-date placement while inbox refresh runs, then uses the newly persisted items and inbox-check status. Persisting a rendered digest is optional; its prior-date placement is not authoritative. Email and push delivery are not part of the first release.
+
+### Date-Aware Display
+
+A separate display path calculates from stored items on display, at household-local midnight for active views, and on resume for suspended views. It does not call the inbox connector or rerun classification/extraction:
+
+```mermaid
+flowchart TD
+  A["Open or resume view"] --> D["Use stored items and current household date"]
+  B["Active view crosses household midnight"] --> D
+  D --> E["Recalculate windows, age, grouping, and emphasis"]
+  E --> F["Display household or child view"]
+```
+
+Follow existing digest/review aging rules. Keep interpreted temporal values and source evidence fixed; only date-dependent presentation changes. Preserve the last successful inbox check and failure/running status, and do not set material source-update markers for a date-only change. No frontend timer, transport, or database representation is selected by this contract.
 
 ## Human Review
 
@@ -182,8 +175,8 @@ Human review is required for:
 - New trusted source approval
 - Low-confidence child or topic matches
 - Ambiguous event dates
-- First calendar writes for a topic/source
-- User policies set to "ask before adding"
+
+Future calendar review policies (including first writes and "ask before adding") remain separate from v1 digest review.
 
 Human feedback should feed back into topic rules, ignore rules, and examples.
 

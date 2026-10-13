@@ -20,3 +20,7 @@ The product may suggest a rule based on observed metadata and explain its breadt
 - Broad source trust remains separate from relevance filtering and digest inclusion.
 - The data model and workflow use provider-neutral source rules.
 - Exact-address and domain rules are sufficient for v1. Additional rule types, such as address patterns or stable sender identifiers, are deferred until examples demonstrate a need.
+
+## Lifecycle Follow-Up
+
+Owner decisions on 2026-10-04 confirm setup-only historical discovery, bounded backfill for later approval/reapproval, and retained display with a warning after narrowing/disabling. The authoritative windows and behavior live in [Choose School Sources](../product-requirements.md#choose-school-sources), with [synthetic lifecycle outcomes](../product/reconciliation-scenarios.md#source-rule-lifecycle-r3). Stopping future analysis is distinct from deleting stored content.

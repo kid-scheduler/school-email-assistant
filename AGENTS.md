@@ -4,19 +4,19 @@ This is the entry point for AI agents and human contributors working in School E
 
 ## Project Purpose
 
-School Email Assistant helps parents turn school inbox noise into trusted daily summaries. The first surface may summarize important dates and events; formal calendar candidates are a second-stage capability.
+School Email Assistant helps parents turn approved-source email bodies from one owner-controlled Outlook/Hotmail inbox into a read-only, date-aware web digest. Calendar connections and formal calendar candidates/writes are a second-stage capability.
 
 The product should help users:
 
-- Connect school-related inboxes and calendars.
+- Connect the pilot inbox for read-only processing.
 - Approve trusted school senders.
 - Configure child-specific topics and preferences.
-- Receive daily summaries of relevant messages.
+- View a cached household or child digest with background and owner-triggered checks.
 - Include important dates/events in the digest, but defer formal calendar candidates until the first digest-focused surface is useful.
 
 ## Current Operating Mode
 
-Requirements and harness setup.
+Product-definition documentation and harness setup. Requirements reconciliation is complete and [cached digest documentation readiness](docs/product/cached-digest-readiness.md) is accepted. Formal specification writing remains deferred and requires separate authorization.
 
 We are not implementing application functionality yet. Current work should improve requirements, specs, documentation, fixtures, mocks, and harness guidance.
 
@@ -32,7 +32,7 @@ We are not implementing application functionality yet. Current work should impro
 
 ## Code Style Essentials
 
-No application stack has been selected yet.
+React web, React Native later, a backend API, and Postgres are selected major components. Framework, schema, auth vendor, and deployment details remain undecided; see [Decision 0005](docs/decisions/0005-preserve-selected-component-direction.md).
 
 When code is introduced:
 

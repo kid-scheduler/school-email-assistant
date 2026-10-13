@@ -2,7 +2,7 @@
 
 ## Current State
 
-No application code has been implemented yet. Requirements discovery is paused at the [Version 0 trial snapshot](../product/requirements-workshop-v0.md). Architecture is documented as intended boundaries and provisional proposals, not formal contracts.
+No application code has been implemented yet. The Version 0 checkpoint is merged and documentation reconciliation is complete. Component direction is selected; detailed architecture is provisional, not a formal contract.
 
 ## Expected System Shape
 
@@ -19,7 +19,7 @@ flowchart LR
   Graph -. "later release" .-> Calendar["Calendar Connectors"]
 ```
 
-The diagram proposes a React web frontend, backend API service, and Postgres; no application stack has been selected. React Native is a future mobile proposal, not a Version 0 requirement. These choices need reconciliation with the product boundary before formal specification.
+The diagram reflects selected major components: React web first, backend API, Postgres, and React Native later. See [Decision 0005](../decisions/0005-preserve-selected-component-direction.md) for the selection and genuinely undecided implementation details. Mobile delivery is outside the first release.
 
 ## Key Boundaries
 

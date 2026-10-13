@@ -10,6 +10,9 @@ This repository is the fresh implementation home. It is intended to stand on its
 - [Agent Guidance](../AGENTS.md): the progressive-disclosure entry point for agents and contributors.
 - [Product Requirements](./product-requirements.md): user goals, scope, policies, and non-goals.
 - [Product Overview](./product/overview.md): durable product summary and current product boundary.
+- [Accepted MVP Definition](./product/mvp-definition.md): accepted journey, boundaries, success criteria, and approval provenance.
+- [Cached Digest Readiness](./product/cached-digest-readiness.md): owner-accepted documentation readiness, scope, and deferred dependencies.
+- [Cached Digest Acceptance Examples](./product/cached-digest-acceptance-examples.md): synthetic display expectations under accepted rules.
 - [Architecture](./architecture.md): proposed system boundaries, major services, and integration points.
 - [Architecture Overview](./architecture/overview.md): current implementation architecture summary.
 - [LangGraph Workflows](./langgraph-workflows.md): graph state, nodes, branching, and human-in-the-loop flow.
@@ -29,11 +32,6 @@ This repository is the fresh implementation home. It is intended to stand on its
 - Calendar writes require deterministic validation and deduplication before any event is created or updated.
 - LangGraph should coordinate workflow execution; provider APIs, persistence, OAuth, and calendar writes should remain ordinary application services.
 
-## Near-Term Sequence
+## Current Scope
 
-1. Capture the requirements and target architecture in these docs.
-2. Refine the generic development harness in a separate repository.
-3. Decide the initial application scaffold for this fresh repo.
-4. Add LangGraph and provider abstraction dependencies.
-5. Add graph-driven email classification and extraction behind tests.
-6. Include important dates/events in the digest, while deferring formal calendar candidates and writes until the first digest-focused workflow is useful.
+Requirements reconciliation is complete, and the owner accepted documentation readiness for [cached digest display and source verification](product/cached-digest-readiness.md). Formal specification writing, mocks, implementation, and new experiments remain deferred and require separate authorization.

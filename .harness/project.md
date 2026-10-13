@@ -2,11 +2,11 @@
 
 ## Product Goal
 
-Build a school email assistant that helps parents manage school communication across children, topics, inboxes, and calendars.
+Build a read-only, date-aware web digest from approved-source bodies in the pilot inbox. Calendar integration follows later.
 
 ## Current Phase
 
-Requirements and harness setup.
+Product-definition documentation and harness setup. Requirements reconciliation is complete and [cached digest documentation readiness](../docs/product/cached-digest-readiness.md) is accepted. Formal specification writing, mocks, implementation, experiments, and skill creation require separate authorization.
 
 ## Primary User
 
