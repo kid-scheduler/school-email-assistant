@@ -10,6 +10,9 @@ This repository is the fresh implementation home. It is intended to stand on its
 - [Agent Guidance](../AGENTS.md): the progressive-disclosure entry point for agents and contributors.
 - [Product Requirements](./product-requirements.md): user goals, scope, policies, and non-goals.
 - [Product Overview](./product/overview.md): durable product summary and current product boundary.
+- [Accepted MVP Definition](./product/mvp-definition.md): accepted journey, boundaries, success criteria, and approval provenance.
+- [Cached Digest Readiness](./product/cached-digest-readiness.md): owner-accepted documentation readiness, scope, and deferred dependencies.
+- [Cached Digest Acceptance Examples](./product/cached-digest-acceptance-examples.md): synthetic display expectations under accepted rules.
 - [Architecture](./architecture.md): proposed system boundaries, major services, and integration points.
 - [Architecture Overview](./architecture/overview.md): current implementation architecture summary.
 - [LangGraph Workflows](./langgraph-workflows.md): graph state, nodes, branching, and human-in-the-loop flow.
@@ -31,4 +34,4 @@ This repository is the fresh implementation home. It is intended to stand on its
 
 ## Current Scope
 
-Reconcile the workshop findings and document synthetic scenarios; see [review status](product/requirements-workshop-v0-review.md#reconciliation-status) and [scenario outcomes](product/reconciliation-scenarios.md). Stop before OpenSpec, application implementation, or skill creation. Later work requires a separate authorized scope.
+Requirements reconciliation is complete, and the owner accepted documentation readiness for [cached digest display and source verification](product/cached-digest-readiness.md). Formal specification writing, mocks, implementation, and new experiments remain deferred and require separate authorization.

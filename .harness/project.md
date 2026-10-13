@@ -6,7 +6,7 @@ Build a read-only, date-aware web digest from approved-source bodies in the pilo
 
 ## Current Phase
 
-Documentation reconciliation and harness setup. Current scope stops before OpenSpec, application implementation, or skill creation; see [review status](../docs/product/requirements-workshop-v0-review.md#reconciliation-status).
+Product-definition documentation and harness setup. Requirements reconciliation is complete and [cached digest documentation readiness](../docs/product/cached-digest-readiness.md) is accepted. Formal specification writing, mocks, implementation, experiments, and skill creation require separate authorization.
 
 ## Primary User
 

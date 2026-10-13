@@ -270,11 +270,17 @@ Opening the app displays a digest from cached, stored items without itself trigg
 
 The cached items may include messages retrieved by four-hour background checks. The household owner can select `Check for updates` to start an immediate inbox check. The digest should display when it last checked the inbox successfully and whether a check is currently running or failed. Date-only recalculation must not advance the last successful inbox-check timestamp, clear a check failure, or mark an item as materially updated by a new message. Timer, rendering, and storage mechanisms remain implementation choices.
 
+When a digest has no currently displayable items, use a contextual empty message that distinguishes `No successful inbox check yet` from `No relevant items in the current display windows` after a successful check. Keep existing check-status and last-success information visible, including any later failure. An empty view does not mean there are no school obligations, expand coverage, change check triggers, or resolve pending review/category items. Exact copy and layout can be validated later while preserving this distinction. See [Decision 0008](decisions/0008-distinguish-empty-digest-check-history.md) for approval provenance.
+
 When a newer message changes the time, location, requirements, or other material details of an existing event, the digest should identify that event as updated and show the current information with source evidence.
 
 The four-hour cadence should be an operational configuration value, not a user-facing preference in the first release, so it can be tuned later without changing digest behavior.
 
 When newer source information clearly replaces earlier details for the same event or action, present the replacement as the current information and retain evidence of the change. Recency alone does not resolve a contradiction. If the messages conflict without a clear replacement, show the item in `Needs review` with both supporting excerpts and their source metadata; identify the conflicting detail instead of choosing a value without adequate evidence.
+
+For a dated event that approved-source email body information clearly identifies as canceled, keep the event at its scheduled date with a prominent `Canceled` label. Preserve its scheduled date/range and supporting evidence, and apply ordinary upcoming/history display eligibility. Make cancellation clear rather than presenting it as an active commitment. This adds no separate canceled-events section or display window and does not decide data deletion or storage retention. Cancellations without a usable date, uncertain event matches, reinstatement, and cancellation of a separate action remain open for scope review. See [Decision 0006](decisions/0006-display-clearly-canceled-dated-events.md) for approval provenance.
+
+When a clearly canceled dated event range spans today, show `Canceled` without `Ongoing`. Keep the event once in current/upcoming, preserve its complete scheduled range and supporting evidence, and apply ordinary eligibility, emphasis, and history rules. This label exception avoids suggesting that a canceled event is happening; see [Decision 0010](decisions/0010-suppress-ongoing-label-for-canceled-ranges.md) for approval provenance.
 
 ### Owner Corrections And Feedback
 
@@ -309,7 +315,7 @@ Calendar writes should be reversible and auditable. Every created event should l
 
 ### Reconciliation Evidence And Remaining Questions
 
-[Review findings](product/requirements-workshop-v0-review.md#reconciliation-status) are resolved with [synthetic scenarios](product/reconciliation-scenarios.md) covering lifecycle, precedence, and date boundaries. Cancellation display, privacy retention, authentication details, and classification/matching validation remain separate [open questions](open-questions.md). These documentation decisions do not authorize implementation.
+[Review findings](product/requirements-workshop-v0-review.md#reconciliation-status) are resolved with [synthetic scenarios](product/reconciliation-scenarios.md) covering lifecycle, precedence, and date boundaries. Clearly canceled dated-event display is accepted in [Decision 0006](decisions/0006-display-clearly-canceled-dated-events.md); remaining cancellation cases, privacy retention, authentication details, and classification/matching validation remain separate [open questions](open-questions.md). These documentation decisions do not authorize implementation.
 
 ## Functional Requirements
 

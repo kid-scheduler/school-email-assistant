@@ -6,6 +6,8 @@ School Email Assistant helps parents turn school inbox noise into a trusted date
 
 The Version 0 checkpoint is merged. Documentation reconciliation is complete; [review status](requirements-workshop-v0-review.md#reconciliation-status) tracks outcomes. Formal specification and implementation remain deferred.
 
+The [accepted MVP definition](mvp-definition.md) consolidates approvals. The owner accepted [documentation readiness](cached-digest-readiness.md#readiness-checklist) for cached digest display and source verification on 2026-10-12; formal specification writing remains deferred and requires separate authorization.
+
 ## Core Promise
 
 The product should help a parent know what matters, what requires action, and what can be safely ignored because it does not apply to their family, without giving automation more authority than it has earned.

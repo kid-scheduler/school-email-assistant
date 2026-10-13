@@ -16,7 +16,7 @@ The product should help users:
 
 ## Current Operating Mode
 
-Requirements reconciliation and harness setup; see [review status](docs/product/requirements-workshop-v0-review.md#reconciliation-status).
+Product-definition documentation and harness setup. Requirements reconciliation is complete and [cached digest documentation readiness](docs/product/cached-digest-readiness.md) is accepted. Formal specification writing remains deferred and requires separate authorization.
 
 We are not implementing application functionality yet. Current work should improve requirements, specs, documentation, fixtures, mocks, and harness guidance.
 

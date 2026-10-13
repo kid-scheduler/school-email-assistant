@@ -17,6 +17,8 @@ Planning documents live in [docs](./docs/README.md):
 - [Agent Guidance](./AGENTS.md)
 - [Product Requirements](./docs/product-requirements.md)
 - [Product Overview](./docs/product/overview.md)
+- [Accepted MVP Definition](./docs/product/mvp-definition.md)
+- [Accepted Slice Readiness](./docs/product/cached-digest-readiness.md)
 - [Architecture](./docs/architecture.md)
 - [Architecture Overview](./docs/architecture/overview.md)
 - [LangGraph Workflows](./docs/langgraph-workflows.md)
@@ -27,4 +29,4 @@ Planning documents live in [docs](./docs/README.md):
 
 ## Current Scope
 
-Reconcile the workshop findings and document synthetic scenarios; see [review status](docs/product/requirements-workshop-v0-review.md#reconciliation-status) and [scenario outcomes](docs/product/reconciliation-scenarios.md). Stop before OpenSpec, application implementation, or skill creation. Later work requires a separate authorized scope.
+Requirements reconciliation is complete, and the owner accepted documentation readiness for [cached digest display and source verification](docs/product/cached-digest-readiness.md). Formal specification writing, mocks, implementation, and new experiments remain deferred and require separate authorization.
